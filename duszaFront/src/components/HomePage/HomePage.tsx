@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import MapEditor from '../Map/MapEditor';
+import MapSelectionPage, { type SelectableMap } from '../Map/MapSelectionPage';
 import ProfilePage from '../Profile/ProfilePage';
 import Navbar from './Navbar/Navbar';
 import styles from './HomePage.module.css';
@@ -12,10 +13,16 @@ interface HomePageProps {
   profileError?: string;
 }
 
-type HomePageSection = 'home' | 'editor' | 'profile' | 'statistics' | 'maps';
+type HomePageSection = 'home' | 'editor' | 'profile' | 'statistics' | 'maps' | 'map-selection' | 'game';
 
 const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange, handleLogout, profileError }) => {
   const [section, setSection] = useState<HomePageSection>('home');
+  const [selectedGameMap, setSelectedGameMap] = useState<SelectableMap | null>(null);
+
+  const handleStartSelectedMap = (map: SelectableMap) => {
+    setSelectedGameMap(map);
+    setSection('game');
+  };
 
   return (
     <div className={styles.homePage}>
@@ -29,7 +36,11 @@ const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange,
       {section === 'home' && (
         <>
           <div className={styles.homeActions}>
-            <button type="button" className={styles.homeActionButton}>
+            <button
+              type="button"
+              onClick={() => setSection('map-selection')}
+              className={styles.homeActionButton}
+            >
               Játék
             </button>
             <button
@@ -56,6 +67,22 @@ const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange,
           </button>
           <MapEditor />
         </>
+      )}
+      {section === 'map-selection' && (
+        <MapSelectionPage
+          onBack={() => setSection('home')}
+          onStart={handleStartSelectedMap}
+        />
+      )}
+      {section === 'game' && selectedGameMap && (
+        <main className={styles.gamePlaceholder}>
+          <button type="button" onClick={() => setSection('map-selection')} className={styles.backButton}>
+            ← Vissza a pályaválasztóhoz
+          </button>
+          <span className={styles.gameEyebrow}>KIVÁLASZTOTT PÁLYA</span>
+          <h1>{selectedGameMap.name}</h1>
+          <p>A játékmenet később kerül ide.</p>
+        </main>
       )}
       {section === 'statistics' && (
         <main className={styles.pageContent}>

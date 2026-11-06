@@ -14,7 +14,14 @@ class Map(models.Model):
     height = models.IntegerField() # 1 és 15 között
     map_data = models.TextField()  # A szöveges térképfájl 
     script = models.JSONField(default=list)  # Lista/tömb tárolása (ArrayField helyett)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='maps_created_by')
+    is_builtin = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='maps_created_by',
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

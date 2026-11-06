@@ -5,8 +5,8 @@ from django.contrib.auth.models import User
 class MapSerializer(serializers.ModelSerializer):
     class Meta:
         model = Map
-        fields = ['id', 'name', 'width', 'height', 'map_data', 'created_by', 'created_at']
-        read_only_fields = ['created_by', 'created_at']
+        fields = ['id', 'name', 'width', 'height', 'map_data', 'is_builtin', 'created_by', 'created_at']
+        read_only_fields = ['is_builtin', 'created_by', 'created_at']
 
     def validate(self, data):
         width = data.get('width')

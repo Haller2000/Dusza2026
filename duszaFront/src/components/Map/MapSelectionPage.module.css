@@ -1,0 +1,347 @@
+.selectionPage {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-bottom: 90px;
+  color: #e5e7eb;
+  text-align: left;
+}
+
+.backButton {
+  margin: 0 0 22px;
+  padding: 8px 12px;
+  border: 1px solid #293241;
+  border-radius: 7px;
+  color: #cbd5e1;
+  background: #11151d;
+  cursor: pointer;
+}
+
+.backButton:hover {
+  border-color: #475569;
+  background: #191f2a;
+}
+
+.pageHeader {
+  margin-bottom: 32px;
+}
+
+.eyebrow {
+  color: #fbbf24;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.pageHeader h1 {
+  margin: 8px 0;
+  color: #f8fafc;
+  font-size: clamp(30px, 5vw, 42px);
+  letter-spacing: -0.035em;
+}
+
+.pageHeader p,
+.sectionHeading p {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.mapSection {
+  margin-bottom: 34px;
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.sectionHeading h2 {
+  margin: 0 0 5px;
+  color: #f3f4f6;
+  font-size: 20px;
+}
+
+.sectionCount {
+  padding: 5px 9px;
+  border: 1px solid #2c3544;
+  border-radius: 999px;
+  color: #9ca3af;
+  background: #171c25;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.mapGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 255px), 1fr));
+  gap: 16px;
+}
+
+.mapCard {
+  overflow: hidden;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid #293241;
+  border-radius: 12px;
+  color: inherit;
+  background: linear-gradient(160deg, #151a23, #10141b);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.mapCard:hover {
+  transform: translateY(-2px);
+  border-color: #536174;
+}
+
+.selectedCard {
+  border-color: #fbbf24;
+  box-shadow: 0 0 0 1px rgb(251 191 36 / 40%), 0 8px 28px rgb(0 0 0 / 22%);
+}
+
+.previewArea {
+  position: relative;
+  display: grid;
+  min-height: 174px;
+  place-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #293241;
+  background: radial-gradient(ellipse at center, #171d28 0%, #0c0f15 75%);
+}
+
+.mapPreview {
+  display: grid;
+  width: min(100%, 234px);
+  gap: 3px;
+  justify-self: center;
+}
+
+.cell {
+  min-width: 0;
+  aspect-ratio: 1;
+  border-radius: 2px;
+}
+
+.wallCell {
+  background: linear-gradient(145deg, #414b5a, #252d39);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
+}
+
+.goldCell {
+  border-radius: 4px;
+  background: #ffc944;
+  box-shadow: 0 0 8px rgb(255 190 44 / 64%);
+}
+
+.robotCell {
+  border-radius: 3px;
+  background: #62a9ff;
+  box-shadow: 0 0 9px rgb(77 157 255 / 72%);
+}
+
+.emptyCell {
+  background: #1c222c;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 3%);
+}
+
+.previewGoldCount {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  padding: 4px 7px;
+  border: 1px solid rgb(251 191 36 / 28%);
+  border-radius: 999px;
+  color: #fcd34d;
+  background: rgb(39 31 16 / 85%);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cardContent {
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+}
+
+.mapName {
+  overflow: hidden;
+  color: #f3f4f6;
+  font-size: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge {
+  padding: 5px 8px;
+  border: 1px solid #323b49;
+  border-radius: 999px;
+  color: #cbd5e1;
+  background: #202632;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.goldBadge {
+  border-color: #765a24;
+  color: #fcd34d;
+  background: #2b2418;
+}
+
+.sharedBadge {
+  border-color: #315780;
+  color: #93c5fd;
+  background: #19283a;
+}
+
+.ownBadge {
+  border-color: #37624a;
+  color: #86efac;
+  background: #192b22;
+}
+
+.cardHint {
+  color: #8b95a5;
+  font-size: 12px;
+}
+
+.selectedCard .cardHint {
+  color: #fcd34d;
+  font-weight: 700;
+}
+
+.emptyState,
+.statusMessage,
+.errorMessage {
+  padding: 24px;
+  border: 1px dashed #344052;
+  border-radius: 10px;
+  color: #aab4c3;
+  background: #121720;
+  text-align: center;
+}
+
+.emptyState {
+  display: flex;
+  min-height: 148px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.emptyState strong {
+  color: #e5e7eb;
+}
+
+.emptyState span:last-child {
+  font-size: 13px;
+}
+
+.emptyIcon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  margin-bottom: 4px;
+  border-radius: 10px;
+  color: #fbbf24;
+  background: #302719;
+  font-size: 22px;
+}
+
+.errorMessage {
+  margin-bottom: 20px;
+  border-color: #71343b;
+  color: #fecaca;
+  background: #29171b;
+  text-align: left;
+}
+
+.selectionFooter {
+  position: fixed;
+  z-index: 2;
+  right: max(16px, calc((100vw - 1080px) / 2));
+  bottom: 16px;
+  left: max(16px, calc((100vw - 1080px) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px 12px 18px;
+  border: 1px solid #303948;
+  border-radius: 11px;
+  background: rgb(17 21 29 / 94%);
+  box-shadow: 0 10px 32px rgb(0 0 0 / 35%);
+  backdrop-filter: blur(12px);
+}
+
+.selectionFooter > span {
+  overflow: hidden;
+  color: #b7c0ce;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.startButton {
+  flex: 0 0 auto;
+  padding: 10px 14px;
+  border: 1px solid #ffd262;
+  border-radius: 7px;
+  color: #171717;
+  background: linear-gradient(180deg, #ffd978, #f8b92e);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.startButton:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ffe49a, #ffc84e);
+}
+
+.startButton:disabled {
+  border-color: #394150;
+  color: #7b8491;
+  background: #252b35;
+  cursor: not-allowed;
+}
+
+@media (max-width: 520px) {
+  .selectionPage {
+    padding-bottom: 108px;
+  }
+
+  .previewArea {
+    min-height: 145px;
+  }
+
+  .mapGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .selectionFooter {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    padding: 10px;
+  }
+
+  .selectionFooter > span {
+    font-size: 11px;
+  }
+
+  .startButton {
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+}

@@ -22,13 +22,57 @@ class MapAccessTests(APITestCase):
             map_data='>#',
             created_by=self.other_user,
         )
+
     def test_map_list_contains_only_current_users_maps(self):
         self.client.force_authenticate(user=self.owner)
 
         response = self.client.get(reverse('map-list'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual([map_data['id'] for map_data in response.data], [self.owner_map.id])
+        map_ids = {map_data['id'] for map_data in response.data}
+        builtin_ids = set(Map.objects.filter(is_builtin=True).values_list('id', flat=True))
+        self.assertEqual(map_ids, builtin_ids | {self.owner_map.id})
+        self.assertNotIn(self.other_map.id, map_ids)
+
+    def test_five_builtin_maps_are_available_to_every_user(self):
+        self.client.force_authenticate(user=self.owner)
+
+        response = self.client.get(reverse('map-list'))
+
+        builtin_maps = [map_data for map_data in response.data if map_data['is_builtin']]
+        self.assertEqual(len(builtin_maps), 5)
+        for map_data in builtin_maps:
+            rows = map_data['map_data'].splitlines()
+            self.assertEqual(len(rows), map_data['height'])
+            self.assertTrue(all(len(row) == map_data['width'] for row in rows))
+            self.assertEqual(
+                sum(row.count(robot) for row in rows for robot in '<>^v'),
+                1,
+            )
+
+        self.client.force_authenticate(user=self.other_user)
+        other_response = self.client.get(reverse('map-list'))
+        self.assertEqual(
+            {item['id'] for item in other_response.data if item['is_builtin']},
+            {item['id'] for item in builtin_maps},
+        )
+
+    def test_builtin_maps_can_be_read_but_not_changed_or_deleted(self):
+        self.client.force_authenticate(user=self.owner)
+        builtin_map = Map.objects.filter(is_builtin=True).first()
+
+        retrieve_response = self.client.get(reverse('map-detail', args=[builtin_map.id]))
+        update_response = self.client.patch(
+            reverse('map-detail', args=[builtin_map.id]),
+            {'name': 'Changed template'},
+        )
+        delete_response = self.client.delete(reverse('map-detail', args=[builtin_map.id]))
+
+        self.assertEqual(retrieve_response.status_code, 200)
+        self.assertEqual(update_response.status_code, 403)
+        self.assertEqual(delete_response.status_code, 403)
+        builtin_map.refresh_from_db()
+        self.assertNotEqual(builtin_map.name, 'Changed template')
 
     def test_user_cannot_retrieve_another_users_map(self):
         self.client.force_authenticate(user=self.owner)
@@ -50,10 +94,13 @@ class MapAccessTests(APITestCase):
             'width': 2,
             'height': 1,
             'map_data': '>.',
+            'is_builtin': True,
         })
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(Map.objects.get(id=response.data['id']).created_by, self.owner)
+        created_map = Map.objects.get(id=response.data['id'])
+        self.assertEqual(created_map.created_by, self.owner)
+        self.assertFalse(created_map.is_builtin)
 
 
 class UserProfileTests(APITestCase):

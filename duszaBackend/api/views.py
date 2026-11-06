@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -7,13 +8,24 @@ from django.contrib.auth.models import User
 from .models import Map, Score, UserProfile
 from .serializers import MapSerializer, ScoreSerializer
 
+
+class MapPermissions(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated)
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return obj.is_builtin or obj.created_by_id == request.user.id
+        return not obj.is_builtin and obj.created_by_id == request.user.id
+
+
 # 1. Térképek kezelése
 class MapViewSet(viewsets.ModelViewSet):
     serializer_class = MapSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [MapPermissions]
 
     def get_queryset(self):
-        return Map.objects.filter(created_by=self.request.user)
+        return Map.objects.filter(Q(is_builtin=True) | Q(created_by=self.request.user))
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
