@@ -7,7 +7,7 @@ class Map(models.Model):
     width = models.IntegerField()  # 1 és 15 között
     height = models.IntegerField() # 1 és 15 között
     map_data = models.TextField()  # A szöveges térképfájl 
-    script = models.ArrayField(models.TextField())  # A térképhez tartozó script
+    script = models.TextField()  # A térképhez tartozó script
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -21,6 +21,6 @@ class Score(models.Model):
     points = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) 
     script = models.ForeignKey(Map.script, on_delete=models.CASCADE, null=True, blank=True)
     step_count = models.IntegerField()
-    steps = models.ArrayField(models.CharField(max_length=1), size=1000)
+    steps = models.TextField()  # A lépések szöveges formátumban
     gold_count = models.IntegerField()     # Kibányászott aranyak száma
     created_at = models.DateTimeField(auto_now_add=True)
