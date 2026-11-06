@@ -5,19 +5,18 @@ from django.contrib.auth.models import User
 from .models import Map, Score
 from .serializers import MapSerializer, ScoreSerializer
 
-# 1. Térképek kezelése (CRUD: listázás, létrehozás, lekérés)
+# 1. Térképek kezelése
 class MapViewSet(viewsets.ModelViewSet):
     queryset = Map.objects.all()
     serializer_class = MapSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
-        # A térképet készítő felhasználót automatikusan beállítjuk a bejelentkezett userre
         serializer.save(created_by=self.request.user)
 
-# 2. Ranglista / Eredmények kezelése
+# 2. Ranglista / Eredmények kezelése (Itt adjuk hozzá a rendezést!)
 class ScoreViewSet(viewsets.ModelViewSet):
-    queryset = Score.objects.all()
+    queryset = Score.objects.all().order_by('-gold_count', 'step_count') # Több arany előre (-), azonnal kevesebb lépés (+)
     serializer_class = ScoreSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
