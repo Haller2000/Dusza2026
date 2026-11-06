@@ -18,13 +18,12 @@ class MapViewSet(viewsets.ModelViewSet):
 
 # 2. Ranglista / Eredmények kezelése (Itt adjuk hozzá a rendezést!)
 class ScoreViewSet(viewsets.ModelViewSet):
-    queryset = Score.objects.all().order_by('-gold_count', 'step_count') # Több arany előre (-), azonnal kevesebb lépés (+)
+    queryset = Score.objects.all().order_by('-gold_count', 'step_count') # Több arany előre (-), kevesebb lépés (+)
     serializer_class = ScoreSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
 # 3. Egyszerű regisztrációs végpont
 @api_view(['POST'])
 def register_user(request):
