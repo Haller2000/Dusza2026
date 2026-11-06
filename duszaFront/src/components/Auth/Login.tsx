@@ -27,10 +27,11 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
+      const normalizedUsername = username.trim();
       const response = await axios.post<LoginResponseData>(
         'http://127.0.0.1:8000/api/login/',
         {
-          username: username.trim(),
+          username: normalizedUsername,
           password: password,
         }
       );
@@ -38,10 +39,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       if (response.data.token) {
         localStorage.setItem('authToken', response.data.token);
       }
-      localStorage.setItem('username', username);
+      localStorage.setItem('username', normalizedUsername);
 
       if (onLoginSuccess) {
-        onLoginSuccess(response.data);
+        onLoginSuccess({ ...response.data, username: response.data.username || normalizedUsername });
       }
 
     } catch (err) {

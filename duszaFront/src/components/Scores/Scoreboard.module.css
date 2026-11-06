@@ -1,0 +1,54 @@
+.status {
+  padding: 20px;
+}
+
+.error {
+  color: red;
+}
+
+.scoreboard {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.table {
+  width: 100%;
+  margin-top: 15px;
+  border-collapse: collapse;
+}
+
+.headerRow {
+  color: #fff;
+  background: #1e293b;
+  text-align: left;
+}
+
+.headerCell,
+.cell {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+.evenRow {
+  background: #f8fafc;
+}
+
+.oddRow {
+  background: #fff;
+}
+
+.rankCell {
+  font-weight: bold;
+}
+
+.goldCell {
+  color: #d97706;
+  font-weight: bold;
+}
+
+.dateCell {
+  color: #64748b;
+  font-size: 12px;
+}

@@ -1,0 +1,119 @@
+.editorShell {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.alertError,
+.alertSuccess {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.alertError {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.alertSuccess {
+  color: #065f46;
+  background: #d1fae5;
+}
+
+.fieldsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.toolBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #f1f5f9;
+  border-radius: 6px;
+}
+
+.selectedTool {
+  font-weight: bold;
+}
+
+.gridViewport {
+  display: inline-block;
+  overflow-x: auto;
+  margin-bottom: 20px;
+  border: 2px solid #ccc;
+  background: #fff;
+}
+
+.gridRow {
+  display: flex;
+}
+
+.gridCell {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  color: #000;
+  font-size: 14px;
+  font-weight: bold;
+  user-select: none;
+}
+
+.wallCell {
+  background: #334155;
+}
+
+.goldCell {
+  background: #fde047;
+}
+
+.robotCell {
+  color: #fff;
+  background: #3b82f6;
+}
+
+.emptyCell {
+  background: #fff;
+}
+
+.operations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.operationButton {
+  display: inline-block;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.saveButton {
+  background: #2563eb;
+}
+
+.exportButton {
+  background: #16a34a;
+}
+
+.importButton {
+  background: #9333ea;
+}
+
+.hiddenInput {
+  display: none;
+}

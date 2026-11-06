@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import styles from './Scoreboard.module.css';
 
 interface ScoreItem {
   id: number;
@@ -32,38 +33,38 @@ export const Scoreboard: React.FC = () => {
     }
   };
 
-  if (loading) return <div style={{ padding: '20px' }}>Ranglista betöltése...</div>;
-  if (error) return <div style={{ padding: '20px', color: 'red' }}>⚠️ {error}</div>;
+  if (loading) return <div className={styles.status}>Ranglista betöltése...</div>;
+  if (error) return <div className={`${styles.status} ${styles.error}`}>⚠️ {error}</div>;
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto', fontFamily: 'Arial' }}>
+    <div className={styles.scoreboard}>
       <h2>🏆 Ranglista (Scoreboard)</h2>
 
       {scores.length === 0 ? (
         <p>Még nincsenek elmentett eredmények.</p>
       ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '15px' }}>
+        <table className={styles.table}>
           <thead>
-            <tr style={{ background: '#1e293b', color: '#fff', textAlign: 'left' }}>
-              <th style={{ padding: '10px', border: '1px solid #ddd' }}>Helyezés</th>
-              <th style={{ padding: '10px', border: '1px solid #ddd' }}>Játékos</th>
-              <th style={{ padding: '10px', border: '1px solid #ddd' }}>🪙 Arany</th>
-              <th style={{ padding: '10px', border: '1px solid #ddd' }}>🐾 Lépés</th>
-              <th style={{ padding: '10px', border: '1px solid #ddd' }}>Dátum</th>
+            <tr className={styles.headerRow}>
+              <th className={styles.headerCell}>Helyezés</th>
+              <th className={styles.headerCell}>Játékos</th>
+              <th className={styles.headerCell}>🪙 Arany</th>
+              <th className={styles.headerCell}>🐾 Lépés</th>
+              <th className={styles.headerCell}>Dátum</th>
             </tr>
           </thead>
           <tbody>
             {scores.map((score, index) => (
-              <tr key={score.id} style={{ background: index % 2 === 0 ? '#f8fafc' : '#fff' }}>
-                <td style={{ padding: '10px', border: '1px solid #ddd', fontWeight: 'bold' }}>
+              <tr key={score.id} className={index % 2 === 0 ? styles.evenRow : styles.oddRow}>
+                <td className={`${styles.cell} ${styles.rankCell}`}>
                   {index === 0 ? '🥇 1.' : index === 1 ? '🥈 2.' : index === 2 ? '🥉 3.' : `${index + 1}.`}
                 </td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{score.username}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd', fontWeight: 'bold', color: '#d97706' }}>
+                <td className={styles.cell}>{score.username}</td>
+                <td className={`${styles.cell} ${styles.goldCell}`}>
                   {score.gold_count} db
                 </td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{score.step_count} lépés</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd', fontSize: '12px', color: '#64748b' }}>
+                <td className={styles.cell}>{score.step_count} lépés</td>
+                <td className={`${styles.cell} ${styles.dateCell}`}>
                   {new Date(score.created_at).toLocaleString('hu-HU')}
                 </td>
               </tr>

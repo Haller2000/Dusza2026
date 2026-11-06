@@ -1,5 +1,6 @@
 import React, { useState, useEffect, type ChangeEvent } from 'react';
 import axios, { AxiosError } from 'axios';
+import styles from './MapEditor.module.css';
 
 interface MapEditorProps {
   onMapSaved?: () => void;
@@ -169,13 +170,13 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto', fontFamily: 'Arial' }}>
+    <div className={styles.editorShell}>
       <h2>🗺️ Térképszerkesztő</h2>
       
-      {errorMessage && <div style={{ background: '#fee2e2', color: '#991b1b', padding: '10px', marginBottom: '10px', borderRadius: '6px' }}>⚠️ {errorMessage}</div>}
-      {successMessage && <div style={{ background: '#d1fae5', color: '#065f46', padding: '10px', marginBottom: '10px', borderRadius: '6px' }}>✅ {successMessage}</div>}
+      {errorMessage && <div className={styles.alertError}>⚠️ {errorMessage}</div>}
+      {successMessage && <div className={styles.alertSuccess}>✅ {successMessage}</div>}
 
-      <div style={{ display: 'flex', gap: '15px', marginBottom: '15px', flexWrap: 'wrap' }}>
+      <div className={styles.fieldsRow}>
         <div>
           <label>Pálya neve: </label>
           <input 
@@ -207,39 +208,26 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
       </div>
 
       {/* Festő eszközök */}
-      <div style={{ marginBottom: '15px', padding: '10px', background: '#f1f5f9', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', borderRadius: '6px' }}>
+      <div className={styles.toolBar}>
         <span><strong>Eszköz:</strong></span>
-        <button onClick={() => setSelectedTool('#')} style={{ fontWeight: selectedTool === '#' ? 'bold' : 'normal' }}>🧱 Fal (#)</button>
-        <button onClick={() => setSelectedTool('.')} style={{ fontWeight: selectedTool === '.' ? 'bold' : 'normal' }}>🔲 Üres (.)</button>
-        <button onClick={() => setSelectedTool('@')} style={{ fontWeight: selectedTool === '@' ? 'bold' : 'normal' }}>🪙 Arany (@)</button>
-        <button onClick={() => setSelectedTool('>')} style={{ fontWeight: selectedTool === '>' ? 'bold' : 'normal' }}>🤖 Kelet (&gt;)</button>
-        <button onClick={() => setSelectedTool('<')} style={{ fontWeight: selectedTool === '<' ? 'bold' : 'normal' }}>🤖 Nyugat (&lt;)</button>
-        <button onClick={() => setSelectedTool('^')} style={{ fontWeight: selectedTool === '^' ? 'bold' : 'normal' }}>🤖 Észak (^)</button>
-        <button onClick={() => setSelectedTool('v')} style={{ fontWeight: selectedTool === 'v' ? 'bold' : 'normal' }}>🤖 Dél (v)</button>
+        <button onClick={() => setSelectedTool('#')} className={selectedTool === '#' ? styles.selectedTool : ''}>🧱 Fal (#)</button>
+        <button onClick={() => setSelectedTool('.')} className={selectedTool === '.' ? styles.selectedTool : ''}>🔲 Üres (.)</button>
+        <button onClick={() => setSelectedTool('@')} className={selectedTool === '@' ? styles.selectedTool : ''}>🪙 Arany (@)</button>
+        <button onClick={() => setSelectedTool('>')} className={selectedTool === '>' ? styles.selectedTool : ''}>🤖 Kelet (&gt;)</button>
+        <button onClick={() => setSelectedTool('<')} className={selectedTool === '<' ? styles.selectedTool : ''}>🤖 Nyugat (&lt;)</button>
+        <button onClick={() => setSelectedTool('^')} className={selectedTool === '^' ? styles.selectedTool : ''}>🤖 Észak (^)</button>
+        <button onClick={() => setSelectedTool('v')} className={selectedTool === 'v' ? styles.selectedTool : ''}>🤖 Dél (v)</button>
       </div>
 
       {/* Rács (Grid) nézet */}
-      <div style={{ overflowX: 'auto', marginBottom: '20px', border: '2px solid #ccc', display: 'inline-block', background: '#fff' }}>
+      <div className={styles.gridViewport}>
         {grid.map((row, rIndex) => (
-          <div key={rIndex} style={{ display: 'flex' }}>
+          <div key={rIndex} className={styles.gridRow}>
             {row.map((cell, cIndex) => (
               <div
                 key={cIndex}
                 onClick={() => handleCellClick(rIndex, cIndex)}
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  border: '1px solid #e2e8f0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  backgroundColor: cell === '#' ? '#334155' : cell === '@' ? '#fde047' : ['>', '<', '^', 'v'].includes(cell) ? '#3b82f6' : '#fff',
-                  color: ['>', '<', '^', 'v'].includes(cell) ? '#fff' : '#000',
-                  fontWeight: 'bold',
-                  fontSize: '14px',
-                  userSelect: 'none',
-                }}
+                className={`${styles.gridCell} ${cell === '#' ? styles.wallCell : cell === '@' ? styles.goldCell : ['>', '<', '^', 'v'].includes(cell) ? styles.robotCell : styles.emptyCell}`}
               >
                 {cell === '.' ? '' : cell}
               </div>
@@ -249,16 +237,16 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
       </div>
 
       {/* Műveleti gombok */}
-      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        <button onClick={handleSaveMap} disabled={loading} style={{ padding: '10px 20px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+      <div className={styles.operations}>
+        <button onClick={handleSaveMap} disabled={loading} className={`${styles.operationButton} ${styles.saveButton}`}>
           {loading ? 'Mentés...' : '💾 Mentés Szerverre'}
         </button>
-        <button onClick={handleExportFile} style={{ padding: '10px 20px', background: '#16a34a', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+        <button onClick={handleExportFile} className={`${styles.operationButton} ${styles.exportButton}`}>
           📥 Exportálás Fájlba
         </button>
-        <label style={{ padding: '10px 20px', background: '#9333ea', color: '#fff', borderRadius: '6px', cursor: 'pointer', display: 'inline-block' }}>
+        <label className={`${styles.operationButton} ${styles.importButton}`}>
           📂 Importálás Fájlból
-          <input type="file" accept=".txt" onChange={handleImportFile} style={{ display: 'none' }} />
+          <input type="file" accept=".txt" onChange={handleImportFile} className={styles.hiddenInput} />
         </label>
       </div>
     </div>
