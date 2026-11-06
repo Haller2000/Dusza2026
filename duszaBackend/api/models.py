@@ -1,6 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    avatar_id = models.PositiveSmallIntegerField(default=1)
+
+    def __str__(self):
+        return f'{self.user.username} profile'
+
 class Map(models.Model):
     name = models.CharField(max_length=100)
     width = models.IntegerField()  # 1 és 15 között
@@ -23,4 +30,3 @@ class Score(models.Model):
     steps = models.JSONField(default=list) # A megtett lépések listája (ArrayField helyett)
     gold_count = models.IntegerField(default=0)     # Kibányászott aranyak száma
     created_at = models.DateTimeField(auto_now_add=True)
-

@@ -9,31 +9,116 @@
 
 .accountMenu {
   position: relative;
+  padding-bottom: 6px;
+  margin-bottom: -6px;
 }
 
 .accountButton {
-  max-width: 240px;
-  overflow: hidden;
-  padding: 8px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  color: #000;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  padding: 0;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
   background: #fff;
   cursor: pointer;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.logoutButton {
+.accountButton:hover,
+.accountButton:focus-visible {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.accountPanel {
   position: absolute;
   z-index: 1;
   top: calc(100% + 6px);
   right: 0;
-  min-width: max-content;
+  width: min(320px, calc(100vw - 32px));
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #0f172a;
+  background: #fff;
+  box-shadow: 0 12px 28px rgb(15 23 42 / 18%);
+}
+
+.accountName {
+  padding: 7px 6px 10px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.menuLink {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+  padding: 10px 6px;
+  border: 0;
+  border-radius: 6px;
+  color: #0f172a;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.menuLink + .menuLink {
+  border-top: 1px solid #e2e8f0;
+}
+
+.menuLink:hover {
+  background: #f8fafc;
+}
+
+.menuIcon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  place-items: center;
+  border-radius: 5px;
+  color: #2563eb;
+  background: #dbeafe;
+  font-size: 18px;
+}
+
+.menuLink > span:nth-child(2) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.menuLink strong {
+  font-size: 13px;
+}
+
+.menuLink small {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.menuArrow {
+  color: #94a3b8;
+  font-size: 22px;
+}
+
+.logoutButton {
+  width: 100%;
+  margin: 4px 0 2px;
   padding: 8px 12px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 5px;
   color: #fff;
   background: #dc2626;
   cursor: pointer;
+}
+
+.logoutButton:hover {
+  background: #b91c1c;
 }

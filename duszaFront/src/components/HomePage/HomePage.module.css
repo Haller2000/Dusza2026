@@ -2,6 +2,14 @@
   text-align: left;
 }
 
+.profileError {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  color: #991b1b;
+  background: #fee2e2;
+}
+
 .homeActions {
   display: flex;
   flex-direction: column;
@@ -23,6 +31,79 @@
 
 .homeContent {
   text-align: left;
+}
+
+.pageContent {
+  text-align: left;
+}
+
+.pageContent h1 {
+  margin: 0 0 8px;
+}
+
+.pageDescription {
+  margin: 0 0 24px;
+  color: #64748b;
+}
+
+.statisticsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  max-width: 760px;
+}
+
+.statisticCard {
+  display: flex;
+  min-height: 110px;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 18px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #1e293b;
+}
+
+.statisticCard span {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.statisticCard strong {
+  color: #60a5fa;
+  font-size: 30px;
+}
+
+.mapsPlaceholder {
+  display: flex;
+  min-height: 200px;
+  max-width: 760px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  border: 1px dashed #475569;
+  border-radius: 10px;
+  color: #cbd5e1;
+  background: #1e293b;
+  text-align: center;
+}
+
+.mapsPlaceholderIcon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border-radius: 12px;
+  color: #93c5fd;
+  background: #1d4ed8;
+  font-size: 28px;
+}
+
+.mapsPlaceholder span:last-child {
+  color: #94a3b8;
+  font-size: 14px;
 }
 
 .backButton {

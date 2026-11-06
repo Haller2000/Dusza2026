@@ -23,6 +23,9 @@ db.sqlite3-journal
 media/
 staticfiles/
 migrations/
+!api/migrations/
+api/migrations/*
+!api/migrations/*.py
 
 # Titkos adatok / Környezeti változók
 .env

@@ -4,7 +4,7 @@ import { Register } from './Registration';
 import styles from './Auth.module.css';
 
 interface AuthContainerProps {
-  onAuthSuccess?: (data: any) => void;
+  onAuthSuccess?: (data?: { username?: string; avatar_id?: number }) => void;
 }
 
 export const AuthContainer: React.FC<AuthContainerProps> = ({ onAuthSuccess }) => {

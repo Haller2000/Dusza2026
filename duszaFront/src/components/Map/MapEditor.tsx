@@ -1,4 +1,4 @@
-import React, { useState, useEffect, type ChangeEvent } from 'react';
+import React, { useState, type ChangeEvent } from 'react';
 import axios, { AxiosError } from 'axios';
 import styles from './MapEditor.module.css';
 
@@ -8,33 +8,54 @@ interface MapEditorProps {
 
 type CellType = '.' | '#' | '@' | '>' | '<' | '^' | 'v';
 
+const isCellType = (cell: string): cell is CellType =>
+  ['.', '#', '@', '>', '<', '^', 'v'].includes(cell);
+
+const createEmptyGrid = (width: number, height: number): CellType[][] => {
+  const grid = Array.from({ length: height }, () =>
+    Array.from({ length: width }, () => '.' as CellType)
+  );
+  grid[0][0] = '>';
+  return grid;
+};
+
+interface StoredMap {
+  id: number;
+  name: string;
+  width: number;
+  height: number;
+  map_data: string;
+}
+
 export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
   const [mapName, setMapName] = useState<string>('Új Pálya');
   const [width, setWidth] = useState<number>(10);
   const [height, setHeight] = useState<number>(10);
   
   // A rács 2D tömbként tárolva
-  const [grid, setGrid] = useState<CellType[][]>([]);
+  const [grid, setGrid] = useState<CellType[][]>(() => createEmptyGrid(width, height));
   
   // Az aktuálisan kiválasztott "festő" eszköz
   const [selectedTool, setSelectedTool] = useState<CellType>('#');
   
   const [loading, setLoading] = useState<boolean>(false);
+  const [databaseLoading, setDatabaseLoading] = useState<boolean>(false);
+  const [databaseMapsVisible, setDatabaseMapsVisible] = useState<boolean>(false);
+  const [databaseMaps, setDatabaseMaps] = useState<StoredMap[]>([]);
+  const [selectedMapId, setSelectedMapId] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
 
-  // Rács inicializálása vagy átméretezése, ha a width/height változik
-  useEffect(() => {
-    generateEmptyGrid(width, height);
-  }, [width, height]);
+  const handleWidthChange = (value: string) => {
+    const newWidth = Math.max(1, Math.min(15, parseInt(value, 10) || 1));
+    setWidth(newWidth);
+    setGrid(createEmptyGrid(newWidth, height));
+  };
 
-  const generateEmptyGrid = (w: number, h: number) => {
-    const newGrid: CellType[][] = Array.from({ length: h }, () =>
-      Array.from({ length: w }, () => '.')
-    );
-    // Kezdésként teszünk egy robotot a bal felső sarokba
-    newGrid[0][0] = '>';
-    setGrid(newGrid);
+  const handleHeightChange = (value: string) => {
+    const newHeight = Math.max(1, Math.min(15, parseInt(value, 10) || 1));
+    setHeight(newHeight);
+    setGrid(createEmptyGrid(width, newHeight));
   };
 
   // Mezőre kattintás a rácson
@@ -65,6 +86,83 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
   // Konvertálás a backend által elvárt szöveges formátumra
   const gridToString = (): string => {
     return grid.map(row => row.join('')).join('\n');
+  };
+
+  const handleShowDatabaseMaps = async () => {
+    if (databaseMapsVisible) {
+      setDatabaseMapsVisible(false);
+      return;
+    }
+
+    setErrorMessage('');
+    setSuccessMessage('');
+    setDatabaseLoading(true);
+    setDatabaseMapsVisible(true);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await axios.get<StoredMap[]>('http://127.0.0.1:8000/api/maps/', {
+        headers: token ? { Authorization: `Token ${token}` } : {},
+      });
+      setDatabaseMaps(response.data);
+      setSelectedMapId(response.data.length > 0 ? String(response.data[0].id) : '');
+    } catch (err) {
+      const error = err as AxiosError<{ detail?: string }>;
+      setErrorMessage(error.response?.data?.detail || 'Nem sikerült betölteni az adatbázisban tárolt pályákat.');
+      setDatabaseMapsVisible(false);
+    } finally {
+      setDatabaseLoading(false);
+    }
+  };
+
+  const handleLoadDatabaseMap = () => {
+    const selectedMap = databaseMaps.find(map => String(map.id) === selectedMapId);
+    if (!selectedMap) {
+      setErrorMessage('Válassz ki egy betöltendő pályát!');
+      return;
+    }
+
+    try {
+      if (
+        !Number.isInteger(selectedMap.width) ||
+        !Number.isInteger(selectedMap.height) ||
+        selectedMap.width < 1 ||
+        selectedMap.width > 15 ||
+        selectedMap.height < 1 ||
+        selectedMap.height > 15
+      ) {
+        throw new Error('A kiválasztott pálya méretei érvénytelenek.');
+      }
+
+      const rows = selectedMap.map_data.trim().split(/\r?\n/);
+      if (rows.length !== selectedMap.height) {
+        throw new Error('A kiválasztott pálya sorainak száma hibás.');
+      }
+
+      const loadedGrid = rows.map(row => {
+        const cells = row.trim().split('');
+        if (cells.length !== selectedMap.width || !cells.every(isCellType)) {
+          throw new Error('A kiválasztott pálya rácsa hibás formátumú.');
+        }
+
+        return cells;
+      });
+      const robotCount = loadedGrid.flat().filter(cell => ['>', '<', '^', 'v'].includes(cell)).length;
+
+      if (robotCount !== 1) {
+        throw new Error('A kiválasztott pályán pontosan egy robotnak kell lennie.');
+      }
+
+      setMapName(selectedMap.name);
+      setWidth(selectedMap.width);
+      setHeight(selectedMap.height);
+      setGrid(loadedGrid);
+      setDatabaseMapsVisible(false);
+      setErrorMessage('');
+      setSuccessMessage(`A(z) „${selectedMap.name}” pálya betöltve az adatbázisból.`);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Nem sikerült betölteni a kiválasztott pályát.');
+    }
   };
 
   // Mentés a backendre a token használatával
@@ -162,7 +260,7 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
         setHeight(parsedH);
         setGrid(newGrid);
         setSuccessMessage('Sikeres fájl importálás!');
-      } catch (err) {
+      } catch {
         alert('Hiba a fájl feldolgozása közben!');
       }
     };
@@ -192,7 +290,7 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
             min="1" 
             max="15" 
             value={width} 
-            onChange={(e) => setWidth(Math.max(1, Math.min(15, parseInt(e.target.value) || 1)))} 
+            onChange={(e) => handleWidthChange(e.target.value)}
           />
         </div>
         <div>
@@ -202,7 +300,7 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
             min="1" 
             max="15" 
             value={height} 
-            onChange={(e) => setHeight(Math.max(1, Math.min(15, parseInt(e.target.value) || 1)))} 
+            onChange={(e) => handleHeightChange(e.target.value)}
           />
         </div>
       </div>
@@ -248,7 +346,40 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
           📂 Importálás Fájlból
           <input type="file" accept=".txt" onChange={handleImportFile} className={styles.hiddenInput} />
         </label>
+        <button
+          type="button"
+          onClick={handleShowDatabaseMaps}
+          disabled={databaseLoading}
+          className={`${styles.operationButton} ${styles.databaseButton}`}
+        >
+          {databaseLoading ? 'Pályák betöltése...' : databaseMapsVisible ? 'Lista bezárása' : '🗄️ Betöltés adatbázisból'}
+        </button>
       </div>
+      {databaseMapsVisible && (
+        <div className={styles.databaseLoader}>
+          {databaseMaps.length > 0 ? (
+            <>
+              <label htmlFor="stored-map">Mentett pálya:</label>
+              <select
+                id="stored-map"
+                value={selectedMapId}
+                onChange={event => setSelectedMapId(event.target.value)}
+              >
+                {databaseMaps.map(map => (
+                  <option key={map.id} value={map.id}>
+                    {map.name} ({map.width} × {map.height})
+                  </option>
+                ))}
+              </select>
+              <button type="button" onClick={handleLoadDatabaseMap}>
+                Pálya betöltése
+              </button>
+            </>
+          ) : (
+            <span>{databaseLoading ? 'Mentett pályák keresése...' : 'Nincs mentett pálya az adatbázisban.'}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,10 +1,13 @@
 import React, { useState, type FormEvent, type ChangeEvent } from 'react';
 import axios, { AxiosError } from 'axios';
 import styles from './Auth.module.css';
+import PasswordInput from './PasswordInput';
+import AvatarPicker from '../Profile/AvatarPicker';
 
 interface RegisterResponseData {
   message?: string;
   error?: string;
+  avatar_id?: number;
   username?: string[];
   password?: string[];
 }
@@ -17,6 +20,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [avatarId, setAvatarId] = useState<number>(1);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -40,6 +44,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
         {
           username: username.trim(),
           password: password,
+          avatar_id: avatarId,
         },
         {
           headers: { 'Content-Type': 'application/json' },
@@ -50,6 +55,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
       setUsername('');
       setPassword('');
       setConfirmPassword('');
+      setAvatarId(1);
 
       setTimeout(() => {
         onRegisterSuccess();
@@ -100,8 +106,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
 
         <div className={styles.formGroup}>
           <label className={styles.formLabel}>Jelszó:</label>
-          <input
-            type="password"
+          <PasswordInput
             className={styles.formInput}
             value={password}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
@@ -113,8 +118,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
 
         <div className={styles.formGroup}>
           <label className={styles.formLabel}>Jelszó megerősítése:</label>
-          <input
-            type="password"
+          <PasswordInput
             className={styles.formInput}
             value={confirmPassword}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
@@ -123,6 +127,8 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
             disabled={loading}
           />
         </div>
+
+        <AvatarPicker selectedAvatarId={avatarId} onSelect={setAvatarId} disabled={loading} />
 
         <button type="submit" disabled={loading} className={`${styles.submitBtn} ${styles.register}`}>
           {loading ? 'Regisztráció...' : 'Regisztrálok'}

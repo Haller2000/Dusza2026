@@ -114,6 +114,23 @@
   background: #9333ea;
 }
 
+.databaseButton {
+  background: #0f766e;
+}
+
+.databaseLoader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.databaseLoader select,
+.databaseLoader button {
+  padding: 8px 10px;
+}
+
 .hiddenInput {
   display: none;
 }

@@ -1,11 +1,13 @@
 import React, { useState, type FormEvent, type ChangeEvent } from 'react';
 import axios, { AxiosError } from 'axios';
 import styles from './Auth.module.css';
+import PasswordInput from './PasswordInput';
 
 interface LoginResponseData {
   token?: string;
   user_id?: number;
   username?: string;
+  avatar_id?: number;
   error?: string;
   non_field_errors?: string[];
 }
@@ -87,8 +89,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
         <div className={styles.formGroup}>
           <label className={styles.formLabel}>Jelszó:</label>
-          <input
-            type="password"
+          <PasswordInput
             className={styles.formInput}
             value={password}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}

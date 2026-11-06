@@ -1,17 +1,19 @@
 from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-from .models import Map, Score
+from .models import Map, Score, UserProfile
 from .serializers import MapSerializer, ScoreSerializer
 
 # 1. Térképek kezelése
 class MapViewSet(viewsets.ModelViewSet):
-    queryset = Map.objects.all()
     serializer_class = MapSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Map.objects.filter(created_by=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
@@ -29,6 +31,15 @@ class ScoreViewSet(viewsets.ModelViewSet):
 def register_user(request):
     username = request.data.get('username')
     password = request.data.get('password')
+    raw_avatar_id = request.data.get('avatar_id', 1)
+
+    try:
+        avatar_id = int(raw_avatar_id)
+    except (TypeError, ValueError):
+        return Response({'error': 'Érvénytelen avatár.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if isinstance(raw_avatar_id, bool) or not 1 <= avatar_id <= 20:
+        return Response({'error': 'Az avatár azonosítójának 1 és 20 közé kell esnie.'}, status=status.HTTP_400_BAD_REQUEST)
     
     if not username or not password:
         return Response({'error': 'A felhasználónév és jelszó megadása kötelező!'}, status=status.HTTP_400_BAD_REQUEST)
@@ -37,11 +48,13 @@ def register_user(request):
         return Response({'error': 'Ez a felhasználónév már foglalt!'}, status=status.HTTP_400_BAD_REQUEST)
         
     user = User.objects.create_user(username=username, password=password)
+    profile = UserProfile.objects.create(user=user, avatar_id=avatar_id)
     token = Token.objects.create(user=user) # Létrehozzuk a tokent regisztrációnál is
     
     return Response({
         'token': token.key,
         'username': user.username,
+        'avatar_id': profile.avatar_id,
         'message': 'Sikeres regisztráció!'
     }, status=status.HTTP_201_CREATED)
 
@@ -58,11 +71,57 @@ def login_user(request):
 
     if user is not None:
         # Ha létezik a user és helyes a jelszó, generálunk vagy lekérjük a tokenjét
+        profile, _ = UserProfile.objects.get_or_create(user=user)
         token, created = Token.objects.get_or_create(user=user)
         return Response({
             'token': token.key,
             'username': user.username,
+            'avatar_id': profile.avatar_id,
             'message': 'Sikeres bejelentkezés!'
         }, status=status.HTTP_200_STATUS_OK if hasattr(status, 'HTTP_200_STATUS_OK') else status.HTTP_200_OK)
     else:
         return Response({'error': 'Hibás felhasználónév vagy jelszó!'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PATCH'])
+@permission_classes([permissions.IsAuthenticated])
+def user_profile(request):
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'PATCH':
+        raw_avatar_id = request.data.get('avatar_id')
+        try:
+            avatar_id = int(raw_avatar_id)
+        except (TypeError, ValueError):
+            return Response({'error': 'Érvénytelen avatár.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if isinstance(raw_avatar_id, bool) or not 1 <= avatar_id <= 20:
+            return Response({'error': 'Az avatár azonosítójának 1 és 20 közé kell esnie.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        profile.avatar_id = avatar_id
+        profile.save(update_fields=['avatar_id'])
+
+    return Response({
+        'username': request.user.username,
+        'avatar_id': profile.avatar_id,
+        'date_joined': request.user.date_joined,
+    })
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def change_password(request):
+    old_password = request.data.get('old_password')
+    new_password = request.data.get('new_password')
+    confirm_password = request.data.get('confirm_password')
+
+    if not old_password or not new_password or not confirm_password:
+        return Response({'error': 'Minden jelszómező kitöltése kötelező.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not request.user.check_password(old_password):
+        return Response({'error': 'A jelenlegi jelszó hibás.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if new_password != confirm_password:
+        return Response({'error': 'Az új jelszavak nem egyeznek.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    request.user.set_password(new_password)
+    request.user.save(update_fields=['password'])
+    return Response({'message': 'A jelszó sikeresen megváltozott.'})
