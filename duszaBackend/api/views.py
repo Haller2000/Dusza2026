@@ -186,6 +186,7 @@ def user_statistics(request):
             {
                 'id': score.id,
                 'map_name': score.map.name,
+                'map_snapshot': score.map_snapshot,
                 'points': score.points,
                 'gold_count': score.gold_count,
                 'step_count': score.step_count,

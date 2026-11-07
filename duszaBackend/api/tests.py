@@ -339,14 +339,42 @@ class UserStatisticsTests(APITestCase):
         self.assertEqual(response.data['games_played'], 2)
         self.assertEqual(response.data['total_gold'], 3)
         self.assertEqual(response.data['total_steps'], 11)
-        self.assertEqual(response.data['total_points'], Decimal('0.54'))
-        self.assertEqual(response.data['average_points'], Decimal('0.27'))
-        self.assertEqual(response.data['best_points'], Decimal('0.29'))
+        self.assertEqual(response.data['total_points'], Decimal('53.57'))
+        self.assertEqual(response.data['average_points'], Decimal('26.785'))
+        self.assertEqual(response.data['best_points'], Decimal('28.57'))
         self.assertEqual(response.data['best_gold'], 2)
         self.assertEqual(len(response.data['recent_games']), 2)
         self.assertTrue(all(item['map_name'] == self.map.name for item in response.data['recent_games']))
+        self.assertEqual(response.data['recent_games'][0]['map_snapshot'], {
+            'name': self.map.name,
+            'width': self.map.width,
+            'height': self.map.height,
+            'map_data': self.map.map_data,
+            'is_builtin': self.map.is_builtin,
+        })
 
-    def test_score_points_are_gold_divided_by_steps_and_round_to_two_decimals(self):
+    def test_score_keeps_map_snapshot_when_original_map_changes(self):
+        score = Score.objects.create(
+            user=self.user,
+            map=self.map,
+            gold_count=1,
+            step_count=3,
+            steps=[],
+        )
+        self.map.name = 'Updated map'
+        self.map.map_data = '>@'
+        self.map.save()
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(reverse('statistics'))
+
+        self.assertEqual(response.status_code, 200)
+        recent_game = next(item for item in response.data['recent_games'] if item['id'] == score.id)
+        self.assertEqual(recent_game['map_name'], 'Updated map')
+        self.assertEqual(recent_game['map_snapshot']['name'], 'Stats map')
+        self.assertEqual(recent_game['map_snapshot']['map_data'], '>@')
+
+    def test_score_points_are_gold_divided_by_steps_times_100(self):
         score = Score.objects.create(
             user=self.user,
             map=self.map,
@@ -355,7 +383,7 @@ class UserStatisticsTests(APITestCase):
             steps=[],
         )
 
-        self.assertEqual(score.points, Decimal('0.13'))
+        self.assertEqual(score.points, Decimal('12.50'))
 
     def test_zero_steps_produce_zero_points(self):
         score = Score.objects.create(
@@ -382,7 +410,22 @@ class UserStatisticsTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data['points'], '0.50')
+        self.assertEqual(response.data['points'], '50.00')
+
+    def test_updating_gold_or_steps_recalculates_points(self):
+        score = Score.objects.create(
+            user=self.user,
+            map=self.map,
+            gold_count=1,
+            step_count=4,
+            steps=[],
+        )
+
+        score.gold_count = 3
+        score.step_count = 6
+        score.save(update_fields=['gold_count', 'step_count'])
+
+        self.assertEqual(score.points, Decimal('50.00'))
 
     def test_score_list_is_ordered_by_points(self):
         lower_score = Score.objects.create(

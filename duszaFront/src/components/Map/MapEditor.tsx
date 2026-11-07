@@ -1,73 +1,16 @@
 import React, { useState, type ChangeEvent } from 'react';
 import axios, { AxiosError } from 'axios';
+import MapTileIcon, { type MapTile } from './MapTileIcon';
 import styles from './MapEditor.module.css';
 
 interface MapEditorProps {
   onMapSaved?: () => void;
 }
 
-type CellType = '.' | '#' | '@' | '>' | '<' | '^' | 'v';
+type CellType = MapTile;
 
 const isCellType = (cell: string): cell is CellType =>
   ['.', '#', '@', '>', '<', '^', 'v'].includes(cell);
-
-const renderCellIcon = (cell: CellType, iconClassName = styles.cellIcon) => {
-  if (cell === '.') {
-    return (
-      <svg className={iconClassName} viewBox="0 0 48 48" aria-hidden="true">
-        <rect x="3" y="3" width="42" height="42" rx="7" fill="#e2e9d2" stroke="#b9c5a5" strokeWidth="2.5" />
-        <path d="M10 10h8" stroke="#f7f8ee" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  if (cell === '#') {
-    return (
-      <svg className={iconClassName} viewBox="0 0 48 48" aria-hidden="true">
-        <rect x="3" y="3" width="42" height="42" rx="7" fill="#b98a5c" stroke="#8a5f3a" strokeWidth="2.5" />
-        <path d="M5 17h38M5 31h38M18 5v12m12 0v14M16 31v12m17-12v12" stroke="#8a5f3a" strokeWidth="1.7" strokeLinecap="round" opacity=".7" />
-      </svg>
-    );
-  }
-
-  if (cell === '@') {
-    return (
-      <svg className={iconClassName} viewBox="0 0 48 48" aria-hidden="true">
-        <ellipse cx="24" cy="40" rx="11" ry="3" fill="#6b5a3a" opacity=".2" />
-        <circle cx="24" cy="23" r="12" fill="#f4b83f" stroke="#a8721a" strokeWidth="2.5" />
-        <circle cx="24" cy="23" r="6.5" fill="none" stroke="#a8721a" strokeWidth="1.6" opacity=".65" />
-        <path d="M19 18a7 7 0 0 1 5-2" stroke="#fff8e0" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  if (['>', '<', '^', 'v'].includes(cell)) {
-    const rotation = cell === '^' ? -90 : cell === 'v' ? 90 : 0;
-    const transform = cell === '<'
-      ? 'translate(48 0) scale(-1 1)'
-      : `rotate(${rotation} 24 24)`;
-
-    return (
-      <svg className={iconClassName} viewBox="0 0 48 48" aria-hidden="true">
-        <g transform={transform}>
-          <rect x="8" y="19" width="32" height="22" rx="8" fill="#7bc9a8" stroke="#3d6b54" strokeWidth="2.5" />
-          <rect x="12" y="6" width="24" height="20" rx="8" fill="#9bdcc0" stroke="#3d6b54" strokeWidth="2.5" />
-          <circle cx="19" cy="15" r="3" fill="#28453a" />
-          <circle cx="29" cy="15" r="3" fill="#28453a" />
-          <circle cx="20" cy="14" r=".8" fill="#d5f3df" />
-          <circle cx="30" cy="14" r=".8" fill="#d5f3df" />
-          <circle cx="24" cy="25" r="2.2" fill="#28453a" opacity=".7" />
-          <path d="M18 33h12" stroke="#3d6b54" strokeWidth="2" strokeLinecap="round" />
-          <rect x="34" y="25" width="4" height="12" rx="2" fill="#d5f3df" stroke="#3d6b54" strokeWidth="1.2" />
-          <circle cx="5" cy="31" r="3.5" fill="#5a5f52" stroke="#3d6b54" strokeWidth="1.8" />
-          <circle cx="43" cy="31" r="3.5" fill="#5a5f52" stroke="#3d6b54" strokeWidth="1.8" />
-        </g>
-      </svg>
-    );
-  }
-
-  return null;
-};
 
 const createEmptyGrid = (width: number, height: number): CellType[][] => {
   const grid = Array.from({ length: height }, () =>
@@ -117,10 +60,8 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
   const [width, setWidth] = useState<number>(10);
   const [height, setHeight] = useState<number>(10);
   
-  // A rács 2D tömbként tárolva
   const [grid, setGrid] = useState<CellType[][]>(() => createEmptyGrid(width, height));
   
-  // Az aktuálisan kiválasztott "festő" eszköz
   const [selectedTool, setSelectedTool] = useState<CellType>('#');
   
   const [loading, setLoading] = useState<boolean>(false);
@@ -144,7 +85,6 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
     setGrid(createEmptyGrid(width, newHeight));
   };
 
-  // Mezőre kattintás a rácson
   const handleCellClick = (rIndex: number, cIndex: number) => {
     const updatedGrid = grid.map((row, r) =>
       row.map((cell, c) => {
@@ -155,12 +95,11 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
       })
     );
 
-    // Ha robotot (> < ^ v) helyezünk el, biztosítsuk, hogy csak 1 legyen a pályán
     if (['>', '<', '^', 'v'].includes(selectedTool)) {
       for (let r = 0; r < updatedGrid.length; r++) {
         for (let c = 0; c < updatedGrid[r].length; c++) {
           if (['>', '<', '^', 'v'].includes(updatedGrid[r][c]) && (r !== rIndex || c !== cIndex)) {
-            updatedGrid[r][c] = '.'; // A régi robot helyére üres kamra kerül
+            updatedGrid[r][c] = '.';
           }
         }
       }
@@ -169,7 +108,6 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
     setGrid(updatedGrid);
   };
 
-  // Konvertálás a backend által elvárt szöveges formátumra
   const gridToString = (): string => {
     return grid.map(row => row.join('')).join('\n');
   };
@@ -252,7 +190,6 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
     }
   };
 
-  // Mentés a backendre a token használatával
   const handleSaveMap = async (saveAsNew = false) => {
     setErrorMessage('');
     setSuccessMessage('');
@@ -315,7 +252,6 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
     }
   };
 
-  // Térkép exportálása szöveges fájlként
   const handleExportFile = () => {
     const fileContent = `${width} ${height}\n${gridToString()}`;
     const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
@@ -327,7 +263,6 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
     URL.revokeObjectURL(url);
   };
 
-  // Térkép importálása fájlból
   const handleImportFile = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -412,19 +347,17 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
         </div>
       </div>
 
-      {/* Festő eszközök */}
       <div className={styles.toolBar}>
         <span><strong>Eszköz:</strong></span>
-        <button onClick={() => setSelectedTool('#')} className={selectedTool === '#' ? styles.selectedTool : ''}>{renderCellIcon('#', styles.toolIcon)} Fal</button>
-        <button onClick={() => setSelectedTool('.')} className={selectedTool === '.' ? styles.selectedTool : ''}>{renderCellIcon('.', styles.toolIcon)} Üres</button>
-        <button onClick={() => setSelectedTool('@')} className={selectedTool === '@' ? styles.selectedTool : ''}>{renderCellIcon('@', styles.toolIcon)} Arany</button>
-        <button onClick={() => setSelectedTool('>')} className={selectedTool === '>' ? styles.selectedTool : ''}>{renderCellIcon('>', styles.toolIcon)} Kelet</button>
-        <button onClick={() => setSelectedTool('<')} className={selectedTool === '<' ? styles.selectedTool : ''}>{renderCellIcon('<', styles.toolIcon)} Nyugat</button>
-        <button onClick={() => setSelectedTool('^')} className={selectedTool === '^' ? styles.selectedTool : ''}>{renderCellIcon('^', styles.toolIcon)} Észak</button>
-        <button onClick={() => setSelectedTool('v')} className={selectedTool === 'v' ? styles.selectedTool : ''}>{renderCellIcon('v', styles.toolIcon)} Dél</button>
+        <button onClick={() => setSelectedTool('#')} className={selectedTool === '#' ? styles.selectedTool : ''}><MapTileIcon cell="#" className={`${styles.cellIcon} ${styles.toolIcon}`} /> Fal</button>
+        <button onClick={() => setSelectedTool('.')} className={selectedTool === '.' ? styles.selectedTool : ''}><MapTileIcon cell="." className={`${styles.cellIcon} ${styles.toolIcon}`} /> Üres</button>
+        <button onClick={() => setSelectedTool('@')} className={selectedTool === '@' ? styles.selectedTool : ''}><MapTileIcon cell="@" className={`${styles.cellIcon} ${styles.toolIcon}`} /> Arany</button>
+        <button onClick={() => setSelectedTool('>')} className={selectedTool === '>' ? styles.selectedTool : ''}><MapTileIcon cell=">" className={`${styles.cellIcon} ${styles.toolIcon}`} /> Kelet</button>
+        <button onClick={() => setSelectedTool('<')} className={selectedTool === '<' ? styles.selectedTool : ''}><MapTileIcon cell="<" className={`${styles.cellIcon} ${styles.toolIcon}`} /> Nyugat</button>
+        <button onClick={() => setSelectedTool('^')} className={selectedTool === '^' ? styles.selectedTool : ''}><MapTileIcon cell="^" className={`${styles.cellIcon} ${styles.toolIcon}`} /> Észak</button>
+        <button onClick={() => setSelectedTool('v')} className={selectedTool === 'v' ? styles.selectedTool : ''}><MapTileIcon cell="v" className={`${styles.cellIcon} ${styles.toolIcon}`} /> Dél</button>
       </div>
 
-      {/* Rács (Grid) nézet */}
       <div className={styles.gridViewport}>
         {grid.map((row, rIndex) => (
           <div key={rIndex} className={styles.gridRow}>
@@ -432,16 +365,15 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
               <div
                 key={cIndex}
                 onClick={() => handleCellClick(rIndex, cIndex)}
-                className={`${styles.gridCell} ${cell === '#' ? styles.wallCell : cell === '@' ? styles.goldCell : ['>', '<', '^', 'v'].includes(cell) ? styles.robotCell : styles.emptyCell}`}
+                className={`${styles.gridCell} ${(rIndex + cIndex) % 2 === 0 ? styles.lightCell : styles.darkCell} ${cell === '#' ? styles.wallCell : ''}`}
               >
-                {cell === '.' ? null : renderCellIcon(cell)}
+                {cell !== '.' && <MapTileIcon cell={cell} className={styles.cellIcon} />}
               </div>
             ))}
           </div>
         ))}
       </div>
 
-      {/* Műveleti gombok */}
       <div className={styles.operations}>
         <button onClick={() => handleSaveMap()} disabled={loading} className={`${styles.operationButton} ${styles.saveButton}`}>
           {loading ? 'Mentés...' : editingMapId ? '💾 Pálya frissítése' : '💾 Mentés Szerverre'}

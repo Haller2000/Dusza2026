@@ -1,0 +1,25 @@
+.grid {
+  display: grid;
+  width: 100%;
+  gap: 3px;
+  box-sizing: border-box;
+  padding: 2%;
+  border: 2px solid #c9b98f;
+  border-radius: 5%;
+  background: linear-gradient(135deg, #f6efdd, #efe5cc);
+}
+
+.tile {
+  display: block;
+  min-width: 0;
+  aspect-ratio: 1;
+  box-sizing: border-box;
+  border: 1.5px solid #b9c2a8;
+  border-radius: 18%;
+}
+
+.tileIcon {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

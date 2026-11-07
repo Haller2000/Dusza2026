@@ -40,7 +40,7 @@ export const Scoreboard: React.FC = () => {
   return (
     <div className={styles.scoreboard}>
       <h2>🏆 Ranglista (Scoreboard)</h2>
-      <p>A pontszám az összegyűjtött arany és a lépések számának hányadosa.</p>
+      <p>A pontszám: összegyűjtött arany ÷ lépések száma × 100.</p>
 
       {scores.length === 0 ? (
         <p>Még nincsenek elmentett eredmények.</p>

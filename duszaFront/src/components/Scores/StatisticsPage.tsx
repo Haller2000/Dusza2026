@@ -1,10 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import axios, { AxiosError } from 'axios';
+import MapCard from '../Map/MapCard';
+import type { SelectableMap } from '../Map/MapSelectionPage';
 import styles from './StatisticsPage.module.css';
+
+interface MapSnapshot {
+  name: string;
+  width: number;
+  height: number;
+  map_data: string;
+  is_builtin: boolean;
+}
 
 interface RecentGame {
   id: number;
   map_name: string;
+  map_snapshot: MapSnapshot;
   points: number;
   gold_count: number;
   step_count: number;
@@ -76,7 +87,7 @@ const StatisticsPage: React.FC<StatisticsPageProps> = ({ onBack }) => {
       <header className={styles.pageHeader}>
         <span className={styles.eyebrow}>JÁTÉKOSI ÁTTEKINTÉS</span>
         <h1>Statisztika</h1>
-        <p>A mentett játékok és eredmények összesítése. Pontszám: összegyűjtött arany / lépések.</p>
+        <p>A mentett játékok és eredmények összesítése. Pontszám: arany ÷ lépések × 100.</p>
       </header>
 
       {errorMessage && <div role="alert" className={styles.errorMessage}>{errorMessage}</div>}
@@ -121,6 +132,23 @@ const StatisticsPage: React.FC<StatisticsPageProps> = ({ onBack }) => {
                       <span>{game.step_count} lépés</span>
                       <strong>{Number(game.points).toLocaleString('hu-HU', { maximumFractionDigits: 2 })} pont</strong>
                     </div>
+                    <details className={styles.mapDetails}>
+                      <summary>Pálya megtekintése</summary>
+                      <div className={styles.mapDetailsContent}>
+                        <MapCard
+                          map={{
+                            ...game.map_snapshot,
+                            id: game.id,
+                          } satisfies SelectableMap}
+                        />
+                        <div className={styles.mapDetailsInfo}>
+                          <strong>{game.map_snapshot.name}</strong>
+                          <span>{game.map_snapshot.width} × {game.map_snapshot.height} mező</span>
+                          <span>{[...game.map_snapshot.map_data].filter(cell => cell === '@').length} arany a pályán</span>
+                          <span>Teljesített eredmény: {game.gold_count} arany, {game.step_count} lépés</span>
+                        </div>
+                      </div>
+                    </details>
                   </article>
                 ))}
               </div>

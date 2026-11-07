@@ -132,9 +132,9 @@
 }
 
 .gameRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 20px;
   padding: 15px 17px;
   border: 1px solid #282e55;
@@ -177,6 +177,49 @@
 
 .gameMetrics strong {
   color: #bce7c7;
+}
+
+.mapDetails {
+  grid-column: 1 / -1;
+  border-top: 1px solid rgb(128 143 207 / 16%);
+}
+
+.mapDetails summary {
+  width: fit-content;
+  padding: 10px 0 0;
+  color: #8ed8c0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mapDetails summary:hover {
+  color: #bce7c7;
+}
+
+.mapDetails summary:focus-visible {
+  outline: 2px solid #bce7a8;
+  outline-offset: 3px;
+}
+
+.mapDetailsContent {
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) minmax(160px, 1fr);
+  align-items: center;
+  gap: 20px;
+  padding: 16px 0 2px;
+}
+
+.mapDetailsInfo {
+  display: grid;
+  gap: 8px;
+  color: #a4afd3;
+  font-size: 13px;
+}
+
+.mapDetailsInfo strong {
+  color: #f3f5ff;
+  font-size: 16px;
 }
 
 .emptyState,
@@ -239,12 +282,15 @@
   }
 
   .gameRow {
-    align-items: flex-start;
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 12px;
   }
 
   .gameMetrics {
     justify-content: flex-start;
+  }
+
+  .mapDetailsContent {
+    grid-template-columns: 1fr;
   }
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import type { SelectableMap } from './MapSelectionPage';
+import MapGridPreview from './MapGridPreview';
 import styles from './MapSelectionPage.module.css';
 
 interface MapCardProps {
@@ -14,26 +15,7 @@ const MapPreview: React.FC<{ map: SelectableMap }> = ({ map }) => {
 
   return (
     <div className={styles.previewArea}>
-      <div
-        className={styles.mapPreview}
-        style={{ gridTemplateColumns: `repeat(${map.width}, minmax(0, 1fr))` }}
-        aria-label={`${map.width} oszlopos, ${map.height} soros pálya`}
-      >
-        {rows.flatMap((row, rowIndex) =>
-          [...row].map((cell, columnIndex) => (
-            <span
-              key={`${rowIndex}-${columnIndex}`}
-              className={`${styles.cell} ${
-                cell === '#' ? styles.wallCell :
-                cell === '@' ? styles.goldCell :
-                ['>', '<', '^', 'v'].includes(cell) ? styles.robotCell :
-                styles.emptyCell
-              }`}
-              aria-hidden="true"
-            />
-          ))
-        )}
-      </div>
+      <MapGridPreview mapData={map.map_data} width={map.width} height={map.height} className={styles.mapPreview} />
       <span className={styles.previewGoldCount}>◆ {goldCount}</span>
     </div>
   );

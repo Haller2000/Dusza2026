@@ -28,12 +28,9 @@ class MapSerializer(serializers.ModelSerializer):
         height = data.get('height', self.instance.height if self.instance else None)
         map_data = data.get('map_data', self.instance.map_data if self.instance else None)
 
-        # 1. Méretek ellenőrzése (1 és 15 között)
         if not (1 <= width <= 15) or not (1 <= height <= 15):
             raise serializers.ValidationError("A térkép dimenzióinak 1 és 15 között kell lenniük!")
 
-        # 2. Sorok és oszlopok száma / struktúra ellenőrzése
-        # A map_data-ban a sorokat új sor (\n) karakterek választják el
         rows = map_data.strip().split('\n')
         if len(rows) != height:
             raise serializers.ValidationError(f"A sorok száma ({len_rows = }) nem egyezik a megadott magassággal ({height})!")

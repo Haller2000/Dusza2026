@@ -135,14 +135,15 @@
   overflow: auto;
   margin-bottom: 20px;
   padding: 9px;
-  border: 1px solid #343a68;
-  border-radius: 12px;
-  background: #10142b;
+  border: 2px solid #c9b98f;
+  border-radius: 26px;
+  background: linear-gradient(135deg, #f6efdd, #efe5cc);
   box-shadow: 0 14px 34px rgb(0 0 0 / 22%);
 }
 
 .gridRow {
   display: flex;
+  gap: 3px;
 }
 
 .gridCell {
@@ -153,8 +154,8 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  border: 1px solid #b9c5a5;
-  border-radius: 6px;
+  border: 1.5px solid #b9c2a8;
+  border-radius: 9px;
   cursor: pointer;
   color: #17231d;
   font-size: 14px;
@@ -185,19 +186,14 @@
 
 .wallCell {
   border-color: #916541;
-  background: #e2e9d2;
 }
 
-.goldCell {
-  background: #e2e9d2;
+.lightCell {
+  background: #e6ecd6;
 }
 
-.robotCell {
-  background: #e2e9d2;
-}
-
-.emptyCell {
-  background: #e2e9d2;
+.darkCell {
+  background: #dde7ca;
 }
 
 .operations {

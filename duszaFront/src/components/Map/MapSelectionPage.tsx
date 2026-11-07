@@ -33,7 +33,6 @@ const MapSelectionPage: React.FC<MapSelectionPageProps> = ({ onBack, onStart }) 
       headers: { Authorization: `Token ${token}` },
     }).then(response => {
       setMaps(response.data);
-      setSelectedMapId(response.data.length > 0 ? response.data[0].id : null);
     }).catch((err: AxiosError<{ detail?: string }>) => {
       setErrorMessage(err.response?.data?.detail || 'Nem sikerült betölteni a pályákat.');
     }).finally(() => {
