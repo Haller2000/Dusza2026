@@ -96,7 +96,7 @@ class MapAccessTests(APITestCase):
             'name': 'New map',
             'width': 2,
             'height': 1,
-            'map_data': '>.',
+            'map_data': '>@',
             'is_builtin': True,
         })
 
@@ -112,7 +112,7 @@ class MapAccessTests(APITestCase):
             'name': self.owner_map.name,
             'width': 2,
             'height': 1,
-            'map_data': '>.'
+            'map_data': '>@'
         })
 
         self.assertEqual(response.status_code, 400)
@@ -133,7 +133,7 @@ class MapAccessTests(APITestCase):
                 'name': self.owner_map.name,
                 'width': 2,
                 'height': 1,
-                'map_data': '>.',
+                'map_data': '>@',
             })
 
         self.assertEqual(response.status_code, 400)
@@ -150,7 +150,7 @@ class MapAccessTests(APITestCase):
             'name': self.owner_map.name,
             'width': 2,
             'height': 1,
-            'map_data': '>.'
+            'map_data': '>@'
         })
 
         self.assertEqual(response.status_code, 201)
@@ -164,14 +164,14 @@ class MapAccessTests(APITestCase):
                 'name': self.owner_map.name,
                 'width': 2,
                 'height': 1,
-                'map_data': '.>',
+                'map_data': '@>',
             },
         )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Map.objects.filter(created_by=self.owner, name=self.owner_map.name).count(), 1)
         self.owner_map.refresh_from_db()
-        self.assertEqual(self.owner_map.map_data, '.>')
+        self.assertEqual(self.owner_map.map_data, '@>')
 
     def test_user_cannot_rename_map_to_another_owned_maps_name(self):
         self.client.force_authenticate(user=self.owner)
@@ -190,6 +190,34 @@ class MapAccessTests(APITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertIn('name', response.data)
+
+    def test_map_cannot_be_saved_without_gold(self):
+        self.client.force_authenticate(user=self.owner)
+
+        response = self.client.post(reverse('map-list'), {
+            'name': 'Map without gold',
+            'width': 2,
+            'height': 1,
+            'map_data': '>.',
+        })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('arany', response.data['map_data'][0])
+        self.assertFalse(Map.objects.filter(name='Map without gold').exists())
+
+    def test_map_cannot_be_saved_without_robot(self):
+        self.client.force_authenticate(user=self.owner)
+
+        response = self.client.post(reverse('map-list'), {
+            'name': 'Map without robot',
+            'width': 2,
+            'height': 1,
+            'map_data': '@.',
+        })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('robot', response.data['map_data'][0])
+        self.assertFalse(Map.objects.filter(name='Map without robot').exists())
 
 
 class UserProfileTests(APITestCase):

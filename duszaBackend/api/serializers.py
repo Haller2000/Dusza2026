@@ -39,6 +39,7 @@ class MapSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"A sorok száma ({len_rows = }) nem egyezik a megadott magassággal ({height})!")
 
         robot_count = 0
+        gold_count = 0
         valid_chars = {'.', '@', '#', '>', '<', '^', 'v'}
 
         for row in rows:
@@ -50,10 +51,18 @@ class MapSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(f"Érvénytelen karakter a térképen: '{char}'")
                 if char in {'>', '<', '^', 'v'}:
                     robot_count += 1
+                elif char == '@':
+                    gold_count += 1
 
-        # 3. Pontosan egy darab robotnak kell lennie a pályán
+        if gold_count == 0:
+            raise serializers.ValidationError({
+                'map_data': 'A pálya csak akkor menthető, ha legalább egy arany is van rajta.'
+            })
+
         if robot_count != 1:
-            raise serializers.ValidationError(f"A térképen pontosan 1 robotnak kell lennie! Jelenleg darab van: {robot_count}")
+            raise serializers.ValidationError({
+                'map_data': f'A pályán pontosan egy robotnak kell lennie. Jelenleg {robot_count} van.'
+            })
 
         return data
 

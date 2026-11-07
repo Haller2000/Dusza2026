@@ -256,6 +256,16 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
   const handleSaveMap = async (saveAsNew = false) => {
     setErrorMessage('');
     setSuccessMessage('');
+    const cells = grid.flat();
+    const robotCount = cells.filter(cell => ['>', '<', '^', 'v'].includes(cell)).length;
+    if (robotCount !== 1) {
+      setErrorMessage('A pálya csak pontosan egy robottal menthető el.');
+      return;
+    }
+    if (!cells.includes('@')) {
+      setErrorMessage('A pálya csak legalább egy arannyal menthető el.');
+      return;
+    }
     setLoading(true);
 
     const mapDataText = gridToString();
