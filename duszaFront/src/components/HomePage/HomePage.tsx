@@ -3,6 +3,7 @@ import MapEditor from '../Map/MapEditor';
 import MyMapsPage from '../Map/MyMapsPage';
 import MapSelectionPage, { type SelectableMap } from '../Map/MapSelectionPage';
 import ProfilePage from '../Profile/ProfilePage';
+import Scoreboard from '../Scores/Scoreboard';
 import StatisticsPage from '../Scores/StatisticsPage';
 import Navbar from './Navbar/Navbar';
 import mapImage from '../../assets/map.svg';
@@ -16,7 +17,7 @@ interface HomePageProps {
   profileError?: string;
 }
 
-type HomePageSection = 'home' | 'editor' | 'profile' | 'statistics' | 'maps' | 'map-selection' | 'game';
+type HomePageSection = 'home' | 'editor' | 'profile' | 'statistics' | 'leaderboard' | 'maps' | 'map-selection' | 'game';
 
 const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange, handleLogout, profileError }) => {
   const [section, setSection] = useState<HomePageSection>('home');
@@ -62,6 +63,13 @@ const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange,
             >
               Pályaszerkesztő
             </button>
+            <button
+              type="button"
+              onClick={() => setSection('leaderboard')}
+              className={`${styles.homeActionButton} ${styles.secondaryAction}`}
+            >
+              Ranglista
+            </button>
           </div>
           <figure className={styles.boardFigure}>
             <img src={mapImage} alt="Robot, aranyak és akadályok egy négyzetrácsos pályán" />
@@ -98,6 +106,7 @@ const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange,
         </main>
       )}
       {section === 'statistics' && <StatisticsPage onBack={() => setSection('home')} />}
+      {section === 'leaderboard' && <Scoreboard onBack={() => setSection('home')} />}
       {section === 'profile' && (
         <ProfilePage
           onBack={() => setSection('home')}

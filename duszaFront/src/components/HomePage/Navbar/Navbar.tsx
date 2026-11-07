@@ -6,7 +6,7 @@ interface NavbarProps {
 	username: string;
 	avatarId: number;
 	handleLogout: () => void;
-	onNavigate: (page: 'profile' | 'statistics' | 'maps') => void;
+	onNavigate: (page: 'profile' | 'statistics' | 'maps' | 'leaderboard') => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ username, avatarId, handleLogout, onNavigate }) => {
@@ -28,7 +28,7 @@ const Navbar: React.FC<NavbarProps> = ({ username, avatarId, handleLogout, onNav
 		}, 250);
 	};
 
-	const navigateTo = (page: 'profile' | 'statistics' | 'maps') => {
+	const navigateTo = (page: 'profile' | 'statistics' | 'maps' | 'leaderboard') => {
 		if (closeMenuTimeout.current) clearTimeout(closeMenuTimeout.current);
 		setAccountMenuOpen(false);
 		onNavigate(page);
@@ -83,6 +83,18 @@ const Navbar: React.FC<NavbarProps> = ({ username, avatarId, handleLogout, onNav
 							<span>
 								<strong>Statisztika</strong>
 								<small>Játékok és eredmények</small>
+							</span>
+							<span className={styles.menuArrow} aria-hidden="true">›</span>
+						</button>
+						<button
+							type="button"
+							onClick={() => navigateTo('leaderboard')}
+							className={styles.menuLink}
+						>
+							<span className={styles.menuIcon} aria-hidden="true">🏆</span>
+							<span>
+								<strong>Ranglista</strong>
+								<small>Játékosok legjobb eredményei</small>
 							</span>
 							<span className={styles.menuArrow} aria-hidden="true">›</span>
 						</button>

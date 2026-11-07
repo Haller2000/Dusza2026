@@ -1,5 +1,5 @@
 from django.db import IntegrityError, transaction
-from django.db.models import Avg, Count, Max, Q, Sum
+from django.db.models import Avg, Count, F, Max, OuterRef, Q, Subquery, Sum
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import ValidationError
@@ -58,6 +58,50 @@ class ScoreViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def leaderboard(request):
+    map_id = request.query_params.get('map')
+    selected_map = None
+
+    if map_id:
+        try:
+            selected_map = Map.objects.get(pk=int(map_id), is_builtin=True)
+        except (Map.DoesNotExist, TypeError, ValueError):
+            return Response(
+                {'detail': 'A kiválasztott sablonpálya nem található.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    best_scores = Score.objects.filter(user=OuterRef('user'))
+    scores = Score.objects.select_related('user', 'map')
+    if selected_map:
+        best_scores = best_scores.filter(map=selected_map)
+        scores = scores.filter(map=selected_map)
+
+    best_score_ids = best_scores.order_by(
+        '-points',
+        '-gold_count',
+        'step_count',
+        '-created_at',
+        '-id',
+    ).values('id')[:1]
+    results = scores.annotate(best_score_id=Subquery(best_score_ids)).filter(
+        id=F('best_score_id')
+    ).order_by('-points', '-gold_count', 'step_count', '-created_at', '-id')
+
+    return Response({
+        'maps': list(
+            Map.objects.filter(is_builtin=True)
+            .order_by('name')
+            .values('id', 'name')
+        ),
+        'results': ScoreSerializer(results, many=True).data,
+    })
+
+
 # 3. Egyszerű regisztrációs végpont
 @api_view(['POST'])
 def register_user(request):
