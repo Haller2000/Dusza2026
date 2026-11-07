@@ -198,10 +198,6 @@
 .gamePlaceholder .backButton {
   align-self: flex-start;
   margin-bottom: auto;
-  border: 1px solid #334155;
-  border-radius: 6px;
-  color: #cbd5e1;
-  background: #111827;
 }
 
 .gameEyebrow {
@@ -223,8 +219,28 @@
 
 .backButton {
   margin-bottom: 16px;
-  padding: 8px 16px;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #333a66;
+  border-radius: 9px;
+  color: #eef0ff;
+  background: #191e3d;
   cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.backButton:hover {
+  transform: translateY(-3px);
+  border-color: #7885a8;
+  box-shadow: 0 12px 22px rgb(0 0 0 / 30%), 0 0 16px rgb(113 215 190 / 12%);
+}
+
+.backButton:focus-visible {
+  outline: 2px solid #bce7a8;
+  outline-offset: 3px;
 }
 
 @media (max-width: 600px) {

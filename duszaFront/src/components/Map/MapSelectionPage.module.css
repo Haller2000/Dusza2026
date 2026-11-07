@@ -1,116 +1,150 @@
 .selectionPage {
   max-width: 1080px;
+  box-sizing: border-box;
   margin: 0 auto;
-  padding-bottom: 90px;
-  color: #e5e7eb;
+  padding: 28px 24px 120px;
+  color: #eef0ff;
   text-align: left;
 }
 
 .backButton {
   margin: 0 0 22px;
-  padding: 8px 12px;
-  border: 1px solid #293241;
-  border-radius: 7px;
-  color: #cbd5e1;
-  background: #11151d;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #333a66;
+  border-radius: 9px;
+  color: #eef0ff;
+  background: #191e3d;
   cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
 .backButton:hover {
-  border-color: #475569;
-  background: #191f2a;
+  transform: translateY(-3px);
+  border-color: #7885a8;
+  box-shadow: 0 12px 22px rgb(0 0 0 / 30%), 0 0 16px rgb(113 215 190 / 12%);
+}
+
+.backButton:focus-visible {
+  outline: 2px solid #bce7a8;
+  outline-offset: 3px;
 }
 
 .pageHeader {
-  margin-bottom: 32px;
+  margin-bottom: 30px;
+  padding: 6px 0 22px;
+  border-bottom: 1px solid rgb(128 143 207 / 12%);
 }
 
 .eyebrow {
-  color: #fbbf24;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #53c9f5;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .pageHeader h1 {
-  margin: 8px 0;
-  color: #f8fafc;
-  font-size: clamp(30px, 5vw, 42px);
-  letter-spacing: -0.035em;
+  margin: 0 0 10px;
+  color: #f4f5fb;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: 0;
 }
 
 .pageHeader p,
 .sectionHeading p {
   margin: 0;
-  color: #9ca3af;
+  color: #a4afd3;
   font-size: 14px;
+  line-height: 1.55;
 }
 
 .mapSection {
-  margin-bottom: 34px;
+  margin-bottom: 32px;
 }
 
 .sectionHeading {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 14px;
+  margin-bottom: 15px;
 }
 
 .sectionHeading h2 {
   margin: 0 0 5px;
-  color: #f3f4f6;
+  color: #f3f5ff;
   font-size: 20px;
+  font-weight: 750;
 }
 
 .sectionCount {
   padding: 5px 9px;
-  border: 1px solid #2c3544;
-  border-radius: 999px;
-  color: #9ca3af;
-  background: #171c25;
+  border: 1px solid #30365f;
+  border-radius: 8px;
+  color: #bce7c7;
+  background: #151a34;
   font-size: 12px;
+  font-weight: 650;
   white-space: nowrap;
 }
 
 .mapGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 255px), 1fr));
-  gap: 16px;
+  gap: 14px;
 }
 
 .mapCard {
   overflow: hidden;
   min-width: 0;
   padding: 0;
-  border: 1px solid #293241;
-  border-radius: 12px;
+  border: 1px solid #282e55;
+  border-radius: 9px;
   color: inherit;
-  background: linear-gradient(160deg, #151a23, #10141b);
+  background: linear-gradient(160deg, #151a33, #10142a);
   cursor: pointer;
+  font: inherit;
   text-align: left;
-  transition: border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+  transition: border-color 160ms ease, transform 180ms ease, box-shadow 180ms ease;
 }
 
 .mapCard:hover {
-  transform: translateY(-2px);
-  border-color: #536174;
+  transform: translateY(-4px);
+  border-color: #7885a8;
+  box-shadow: 0 14px 28px rgb(0 0 0 / 32%), 0 0 18px rgb(113 215 190 / 12%);
+}
+
+.mapCard:focus-visible {
+  outline: 2px solid #bce7a8;
+  outline-offset: 3px;
 }
 
 .selectedCard {
-  border-color: #fbbf24;
-  box-shadow: 0 0 0 1px rgb(251 191 36 / 40%), 0 8px 28px rgb(0 0 0 / 22%);
+  border-color: #91d4a9;
+  box-shadow: 0 0 0 1px rgb(145 212 169 / 38%), 0 10px 28px rgb(0 0 0 / 25%);
+}
+
+.mapCard.selectedCard:hover {
+  border-color: #bce7c7;
+  box-shadow: 0 0 0 1px rgb(188 231 199 / 50%), 0 14px 28px rgb(0 0 0 / 32%), 0 0 18px rgb(113 215 190 / 16%);
 }
 
 .previewArea {
   position: relative;
   display: grid;
-  min-height: 174px;
+  min-height: 180px;
   place-items: center;
   padding: 18px 20px;
-  border-bottom: 1px solid #293241;
-  background: radial-gradient(ellipse at center, #171d28 0%, #0c0f15 75%);
+  border-bottom: 1px solid #282e55;
+  background: radial-gradient(ellipse at center, rgb(145 205 162 / 10%), #10142a 74%);
 }
 
 .mapPreview {
@@ -127,25 +161,45 @@
 }
 
 .wallCell {
-  background: linear-gradient(145deg, #414b5a, #252d39);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
+  background: #b9865b;
+  box-shadow: inset 0 0 0 1px rgb(145 101 65 / 44%);
 }
 
 .goldCell {
-  border-radius: 4px;
-  background: #ffc944;
-  box-shadow: 0 0 8px rgb(255 190 44 / 64%);
+  display: grid;
+  place-items: center;
+  background: #e2e9d2;
+}
+
+.goldCell::after {
+  width: 58%;
+  aspect-ratio: 1;
+  border: 1px solid #a8721a;
+  border-radius: 50%;
+  background: #f4b83f;
+  box-shadow: 0 0 7px rgb(244 184 63 / 38%);
+  content: '';
 }
 
 .robotCell {
-  border-radius: 3px;
-  background: #62a9ff;
-  box-shadow: 0 0 9px rgb(77 157 255 / 72%);
+  display: grid;
+  place-items: center;
+  background: #e2e9d2;
+}
+
+.robotCell::after {
+  width: 68%;
+  height: 58%;
+  border: 1px solid #3d6b54;
+  border-radius: 6px;
+  background: #7bc9a8;
+  box-shadow: inset 0 7px 0 -2px #9bdcc0, 0 2px 4px rgb(40 69 58 / 18%);
+  content: '';
 }
 
 .emptyCell {
-  background: #1c222c;
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 3%);
+  background: #e2e9d2;
+  box-shadow: inset 0 0 0 1px rgb(185 197 165 / 40%);
 }
 
 .previewGoldCount {
@@ -153,10 +207,10 @@
   right: 12px;
   bottom: 10px;
   padding: 4px 7px;
-  border: 1px solid rgb(251 191 36 / 28%);
-  border-radius: 999px;
-  color: #fcd34d;
-  background: rgb(39 31 16 / 85%);
+  border: 1px solid rgb(244 184 63 / 38%);
+  border-radius: 8px;
+  color: #f6d985;
+  background: rgb(31 29 24 / 90%);
   font-size: 11px;
   font-weight: 700;
 }
@@ -164,12 +218,12 @@
 .cardContent {
   display: grid;
   gap: 12px;
-  padding: 15px;
+  padding: 16px;
 }
 
 .mapName {
   overflow: hidden;
-  color: #f3f4f6;
+  color: #f3f5ff;
   font-size: 16px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -183,56 +237,56 @@
 
 .badge {
   padding: 5px 8px;
-  border: 1px solid #323b49;
-  border-radius: 999px;
-  color: #cbd5e1;
-  background: #202632;
+  border: 1px solid #30365f;
+  border-radius: 7px;
+  color: #c7cee8;
+  background: #191e3d;
   font-size: 11px;
   font-weight: 700;
 }
 
 .goldBadge {
   border-color: #765a24;
-  color: #fcd34d;
+  color: #f6d985;
   background: #2b2418;
 }
 
 .sharedBadge {
-  border-color: #315780;
-  color: #93c5fd;
-  background: #19283a;
+  border-color: #356b83;
+  color: #9edff2;
+  background: #172d3a;
 }
 
 .ownBadge {
-  border-color: #37624a;
-  color: #86efac;
-  background: #192b22;
+  border-color: #3b725f;
+  color: #bce7c7;
+  background: #193329;
 }
 
 .cardHint {
-  color: #8b95a5;
+  color: #9da9d1;
   font-size: 12px;
 }
 
 .selectedCard .cardHint {
-  color: #fcd34d;
+  color: #bce7c7;
   font-weight: 700;
 }
 
 .emptyState,
 .statusMessage,
 .errorMessage {
-  padding: 24px;
-  border: 1px dashed #344052;
-  border-radius: 10px;
-  color: #aab4c3;
-  background: #121720;
+  padding: 22px;
+  border: 1px dashed #343a68;
+  border-radius: 9px;
+  color: #aab4d6;
+  background: rgb(17 21 45 / 82%);
   text-align: center;
 }
 
 .emptyState {
   display: flex;
-  min-height: 148px;
+  min-height: 158px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -240,11 +294,13 @@
 }
 
 .emptyState strong {
-  color: #e5e7eb;
+  color: #eef0ff;
 }
 
 .emptyState span:last-child {
+  max-width: 400px;
   font-size: 13px;
+  line-height: 1.5;
 }
 
 .emptyIcon {
@@ -253,72 +309,92 @@
   height: 42px;
   place-items: center;
   margin-bottom: 4px;
-  border-radius: 10px;
-  color: #fbbf24;
-  background: #302719;
+  border-radius: 9px;
+  color: #bce7c7;
+  background: #193329;
   font-size: 22px;
 }
 
 .errorMessage {
   margin-bottom: 20px;
   border-color: #71343b;
-  color: #fecaca;
-  background: #29171b;
+  color: #ffc2ce;
+  background: #321c2a;
   text-align: left;
 }
 
 .selectionFooter {
   position: fixed;
   z-index: 2;
-  right: max(16px, calc((100vw - 1080px) / 2));
-  bottom: 16px;
-  left: max(16px, calc((100vw - 1080px) / 2));
+  right: max(24px, calc((100vw - 1032px) / 2));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  left: max(24px, calc((100vw - 1032px) / 2));
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 12px 14px 12px 18px;
-  border: 1px solid #303948;
-  border-radius: 11px;
-  background: rgb(17 21 29 / 94%);
-  box-shadow: 0 10px 32px rgb(0 0 0 / 35%);
+  padding: 12px 14px 12px 16px;
+  border: 1px solid #343a68;
+  border-radius: 10px;
+  background: rgb(17 21 45 / 96%);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 38%);
   backdrop-filter: blur(12px);
 }
 
 .selectionFooter > span {
   overflow: hidden;
-  color: #b7c0ce;
+  color: #b7c0dc;
   font-size: 13px;
+  line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .startButton {
   flex: 0 0 auto;
-  padding: 10px 14px;
-  border: 1px solid #ffd262;
-  border-radius: 7px;
-  color: #171717;
-  background: linear-gradient(180deg, #ffd978, #f8b92e);
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #54b9db;
+  border-radius: 9px;
+  color: #071323;
+  background: linear-gradient(110deg, #71d7fa, #4bb9e7);
   cursor: pointer;
+  font: inherit;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 750;
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
 }
 
 .startButton:hover:not(:disabled) {
-  background: linear-gradient(180deg, #ffe49a, #ffc84e);
+  transform: translateY(-3px);
+  filter: brightness(1.08);
+  box-shadow: 0 12px 22px rgb(0 0 0 / 30%), 0 0 16px rgb(113 215 190 / 12%);
+}
+
+.startButton:focus-visible {
+  outline: 2px solid #bce7a8;
+  outline-offset: 3px;
 }
 
 .startButton:disabled {
-  border-color: #394150;
-  color: #7b8491;
-  background: #252b35;
+  border-color: #30365f;
+  color: #7d86a7;
+  background: #1b203d;
   cursor: not-allowed;
 }
 
 @media (max-width: 520px) {
   .selectionPage {
-    padding-bottom: 108px;
+    padding: 22px 14px 108px;
+  }
+
+  .pageHeader {
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+  }
+
+  .pageHeader h1 {
+    font-size: 30px;
   }
 
   .previewArea {
@@ -331,7 +407,7 @@
 
   .selectionFooter {
     right: 10px;
-    bottom: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
     left: 10px;
     padding: 10px;
   }
@@ -341,7 +417,16 @@
   }
 
   .startButton {
-    padding: 9px 10px;
+    min-height: 40px;
+    padding: 0 11px;
     font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backButton,
+  .mapCard,
+  .startButton {
+    transition: none;
   }
 }

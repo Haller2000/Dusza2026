@@ -1,39 +1,63 @@
 .profilePage {
   max-width: 760px;
+  box-sizing: border-box;
   margin: 0 auto;
+  padding: 24px;
+  color: #eef0ff;
   text-align: left;
 }
 
 .profilePage h1 {
   margin: 0 0 8px;
+  color: #f4f5fb;
+  font-size: 32px;
+  font-weight: 800;
 }
 
 .description {
   margin: 0 0 22px;
-  color: #64748b;
+  color: #a4afd3;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 .backButton {
   margin-bottom: 18px;
-  padding: 8px 14px;
-  border: 1px solid #475569;
-  border-radius: 6px;
-  color: #e2e8f0;
-  background: #1e293b;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #333a66;
+  border-radius: 9px;
+  color: #eef0ff;
+  background: #191e3d;
   cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.backButton:hover {
+  transform: translateY(-3px);
+  border-color: #7885a8;
+  box-shadow: 0 12px 22px rgb(0 0 0 / 30%), 0 0 16px rgb(113 215 190 / 12%);
+}
+
+.backButton:focus-visible {
+  outline: 2px solid #bce7a8;
+  outline-offset: 3px;
 }
 
 .profileCard {
   margin-bottom: 16px;
   padding: 18px;
-  border: 1px solid #334155;
+  border: 1px solid #282e55;
   border-radius: 9px;
-  background: #1e293b;
+  background: linear-gradient(155deg, #151a33, #10142a);
 }
 
 .profileCard h2 {
   margin: 0 0 16px;
-  color: #f8fafc;
+  color: #f3f5ff;
   font-size: 18px;
 }
 
@@ -46,13 +70,13 @@
 
 .accountDetails dt {
   margin-bottom: 5px;
-  color: #94a3b8;
+  color: #a4afd3;
   font-size: 13px;
 }
 
 .accountDetails dd {
   margin: 0;
-  color: #f8fafc;
+  color: #eef0ff;
   font-weight: 600;
 }
 
@@ -65,7 +89,7 @@
 .passwordForm label {
   display: grid;
   gap: 6px;
-  color: #cbd5e1;
+  color: #c7cee8;
   font-size: 14px;
 }
 
@@ -73,29 +97,41 @@
   box-sizing: border-box;
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #475569;
-  border-radius: 6px;
-  color: #f8fafc;
-  background: #0f172a;
+  border: 1px solid #30365f;
+  border-radius: 8px;
+  color: #eef0ff;
+  background: #11152d;
 }
 
 .passwordForm input:focus {
-  border-color: #3b82f6;
-  outline: 2px solid rgb(59 130 246 / 25%);
+  border-color: #8bcfa8;
+  outline: 2px solid rgb(139 207 168 / 14%);
 }
 
 .primaryButton {
   justify-self: start;
-  padding: 10px 15px;
-  border: 0;
-  border-radius: 6px;
-  color: #fff;
-  background: #2563eb;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #54b9db;
+  border-radius: 9px;
+  color: #071323;
+  background: linear-gradient(110deg, #71d7fa, #4bb9e7);
   cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
 }
 
 .primaryButton:hover:not(:disabled) {
-  background: #1d4ed8;
+  transform: translateY(-3px);
+  filter: brightness(1.08);
+  box-shadow: 0 12px 22px rgb(0 0 0 / 30%), 0 0 16px rgb(113 215 190 / 12%);
+}
+
+.primaryButton:focus-visible {
+  outline: 2px solid #bce7a8;
+  outline-offset: 3px;
 }
 
 .primaryButton:disabled {
@@ -106,16 +142,33 @@
 .errorMessage,
 .successMessage {
   margin-bottom: 16px;
-  padding: 11px 13px;
-  border-radius: 6px;
+  padding: 12px 14px;
+  border: 1px solid;
+  border-radius: 8px;
 }
 
 .errorMessage {
-  color: #fecaca;
-  background: #7f1d1d;
+  border-color: #743b4b;
+  color: #ffc2ce;
+  background: #321c2a;
 }
 
 .successMessage {
-  color: #bbf7d0;
-  background: #14532d;
+  border-color: #3b725f;
+  color: #c1f0d4;
+  background: #193329;
+}
+
+@media (max-width: 520px) {
+  .profilePage {
+    padding: 22px 14px;
+  }
+
+  .profilePage h1 {
+    font-size: 28px;
+  }
+
+  .profileCard {
+    padding: 15px;
+  }
 }
