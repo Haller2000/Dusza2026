@@ -79,6 +79,7 @@ class ScoreSerializer(serializers.ModelSerializer):
             'map_is_builtin',
             'gold_count',
             'step_count',
+            'steps',
             'points',
             'created_at',
         ]
