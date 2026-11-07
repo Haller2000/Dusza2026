@@ -244,18 +244,49 @@ def user_statistics(request):
 
 
 @api_view(['POST'])
-def run_script(request):
-    script_text = request.data.get('script', '')
-    map_data = request.data.get('map', []) # A frontend küldi a térképet 2D listaként
+@permission_classes([permissions.IsAuthenticated])  # Csak bejelentkezve menthető!
+def save_ending(request):
     
-    if not map_data:
-        return Response({"error": "Hiányzó térkép."}, status=status.HTTP_400_BAD_REQUEST)
-        
+    map_id = request.data.get('map_id')
+    gold = request.data.get('gold', 0)
+    steps = request.data.get('steps', 0)
+    history = request.data.get('history', [])
+    script_text = request.data.get('script', '')
+    console_output = request.data.get('console', [])
+
+    if not map_id:
+        return Response({"error": "Hiányzó térkép ID."}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
-        interp = Interpreter(map_data)
-        result = interp.execute(script_text)
-        return Response(result, status=status.HTTP_200_OK)
-    except ValueError as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        map_obj = Map.objects.get(pk=map_id)
+        
+        # Létrehozzuk az eredményt. A modelled save() metódusa kiszámolja a pontot!
+        score = Score.objects.create(
+            user=request.user,
+            map=map_obj,
+            gold_count=gold,
+            step_count=steps,
+            steps=history,                     # Timelapse lépések
+            script=[script_text],              # A lefuttatott kód
+            map_complete="\n".join(console_output), # A konzol kimenet elmentése (opcionális)
+            map_snapshot={                     # Elmentjük a pálya pillanatnyi állapotát
+                "map_data": map_obj.map_data,
+                "width": map_obj.width,
+                "height": map_obj.height,
+            }
+        )
+        
+        # Visszaadjuk a kiszámolt pontot a frontendnek
+        return Response({
+            "status": "success",
+            "message": "Eredmény sikeresen elmentve!",
+            "score_id": score.id,
+            "points": float(score.points),
+            "gold": score.gold_count,
+            "steps": score.step_count
+        }, status=status.HTTP_201_CREATED)
+
+    except Map.DoesNotExist:
+        return Response({"error": "A megadott térkép nem található."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
