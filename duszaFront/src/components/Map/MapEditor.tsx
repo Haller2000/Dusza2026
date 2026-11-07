@@ -59,6 +59,7 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
   const [mapName, setMapName] = useState<string>('Új Pálya');
   const [width, setWidth] = useState<number>(10);
   const [height, setHeight] = useState<number>(10);
+  const cellSize = Math.min(570 / Math.max(width, height), 72);
   
   const [grid, setGrid] = useState<CellType[][]>(() => createEmptyGrid(width, height));
   
@@ -359,19 +360,22 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
       </div>
 
       <div className={styles.gridViewport}>
-        {grid.map((row, rIndex) => (
-          <div key={rIndex} className={styles.gridRow}>
-            {row.map((cell, cIndex) => (
-              <div
-                key={cIndex}
-                onClick={() => handleCellClick(rIndex, cIndex)}
-                className={`${styles.gridCell} ${(rIndex + cIndex) % 2 === 0 ? styles.lightCell : styles.darkCell} ${cell === '#' ? styles.wallCell : ''}`}
-              >
-                {cell !== '.' && <MapTileIcon cell={cell} className={styles.cellIcon} />}
-              </div>
-            ))}
-          </div>
-        ))}
+        <div className={styles.gridBoard}>
+          {grid.map((row, rIndex) => (
+            <div key={rIndex} className={styles.gridRow}>
+              {row.map((cell, cIndex) => (
+                <div
+                  key={cIndex}
+                  onClick={() => handleCellClick(rIndex, cIndex)}
+                  className={`${styles.gridCell} ${(rIndex + cIndex) % 2 === 0 ? styles.lightCell : styles.darkCell} ${cell === '#' ? styles.wallCell : ''}`}
+                  style={{ width: cellSize, minWidth: cellSize, height: cellSize }}
+                >
+                  {cell !== '.' && <MapTileIcon cell={cell} className={styles.cellIcon} />}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className={styles.operations}>
