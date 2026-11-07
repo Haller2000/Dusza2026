@@ -464,3 +464,75 @@ class UserStatisticsTests(APITestCase):
         response = self.client.get(reverse('statistics'))
 
         self.assertEqual(response.status_code, 401)
+
+
+class LeaderboardTests(APITestCase):
+    def setUp(self):
+        self.first_user = User.objects.create_user(username='first-player', password='password123')
+        self.second_user = User.objects.create_user(username='second-player', password='password123')
+        self.template_map = Map.objects.create(
+            name='Template map',
+            width=2,
+            height=1,
+            map_data='>@',
+            is_builtin=True,
+        )
+        self.other_template_map = Map.objects.create(
+            name='Other template',
+            width=2,
+            height=1,
+            map_data='>@',
+            is_builtin=True,
+        )
+        self.custom_map = Map.objects.create(
+            name='Custom map',
+            width=2,
+            height=1,
+            map_data='>@',
+            created_by=self.first_user,
+        )
+
+    def create_score(self, user, map_obj, gold, steps):
+        return Score.objects.create(
+            user=user,
+            map=map_obj,
+            gold_count=gold,
+            step_count=steps,
+            steps=[],
+        )
+
+    def test_leaderboard_shows_each_users_best_result_in_score_order(self):
+        lower_result = self.create_score(self.first_user, self.template_map, 1, 4)
+        best_template_result = self.create_score(self.first_user, self.template_map, 2, 4)
+        best_custom_result = self.create_score(self.first_user, self.custom_map, 3, 4)
+        second_user_result = self.create_score(self.second_user, self.other_template_map, 1, 2)
+
+        response = self.client.get(reverse('leaderboard'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [item['id'] for item in response.data['results']],
+            [best_custom_result.id, second_user_result.id],
+        )
+        self.assertNotIn(lower_result.id, [item['id'] for item in response.data['results']])
+        self.assertNotIn(best_template_result.id, [item['id'] for item in response.data['results']])
+        available_map_ids = {item['id'] for item in response.data['maps']}
+        self.assertTrue({self.template_map.id, self.other_template_map.id}.issubset(available_map_ids))
+
+    def test_template_filter_returns_each_players_best_result_on_that_map(self):
+        lower_result = self.create_score(self.first_user, self.template_map, 1, 4)
+        best_result = self.create_score(self.first_user, self.template_map, 2, 4)
+        self.create_score(self.first_user, self.custom_map, 3, 4)
+        self.create_score(self.second_user, self.other_template_map, 1, 2)
+
+        response = self.client.get(reverse('leaderboard'), {'map': self.template_map.id})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([item['id'] for item in response.data['results']], [best_result.id])
+        self.assertNotIn(lower_result.id, [item['id'] for item in response.data['results']])
+
+    def test_template_filter_rejects_non_template_maps(self):
+        response = self.client.get(reverse('leaderboard'), {'map': self.custom_map.id})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('detail', response.data)

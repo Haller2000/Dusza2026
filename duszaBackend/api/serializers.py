@@ -65,8 +65,21 @@ class MapSerializer(serializers.ModelSerializer):
 
 class ScoreSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source='user.username')
+    map_name = serializers.ReadOnlyField(source='map.name')
+    map_is_builtin = serializers.ReadOnlyField(source='map.is_builtin')
 
     class Meta:
         model = Score
-        fields = ['id', 'user', 'username', 'map', 'gold_count', 'step_count', 'points', 'created_at']
+        fields = [
+            'id',
+            'user',
+            'username',
+            'map',
+            'map_name',
+            'map_is_builtin',
+            'gold_count',
+            'step_count',
+            'points',
+            'created_at',
+        ]
         read_only_fields = ['user', 'points', 'created_at']

@@ -4,6 +4,7 @@ from .views import (
     MapViewSet,
     ScoreViewSet,
     change_password,
+    leaderboard,
     login_user,
     register_user,
     user_profile,
@@ -21,4 +22,5 @@ urlpatterns = [
     path('profile/', user_profile, name='profile'),
     path('change-password/', change_password, name='change-password'),
     path('statistics/', user_statistics, name='statistics'),
+    path('leaderboard/', leaderboard, name='leaderboard'),
 ]
