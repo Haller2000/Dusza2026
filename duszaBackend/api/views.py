@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
+
+from .script_service import Interpreter
 from .models import Map, Score, UserProfile
 from .serializers import MapSerializer, ScoreSerializer
 
@@ -239,3 +241,21 @@ def user_statistics(request):
             for score in recent_games
         ],
     })
+
+
+@api_view(['POST'])
+def run_script(request):
+    script_text = request.data.get('script', '')
+    map_data = request.data.get('map', []) # A frontend küldi a térképet 2D listaként
+    
+    if not map_data:
+        return Response({"error": "Hiányzó térkép."}, status=status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        interp = Interpreter(map_data)
+        result = interp.execute(script_text)
+        return Response(result, status=status.HTTP_200_OK)
+    except ValueError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -7,6 +7,7 @@ from .views import (
     leaderboard,
     login_user,
     register_user,
+    run_script,
     user_profile,
     user_statistics,
 )
@@ -23,4 +24,6 @@ urlpatterns = [
     path('change-password/', change_password, name='change-password'),
     path('statistics/', user_statistics, name='statistics'),
     path('leaderboard/', leaderboard, name='leaderboard'),
+    path('run_script/', run_script, name='run-script'),  # <--- ÚJ: A végpont beregisztrálása
+
 ]
