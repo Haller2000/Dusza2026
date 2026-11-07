@@ -68,33 +68,38 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
   return (
     <>
-      <h2 className={styles.authTitle}>🔐 Bejelentkezés</h2>
-      <p className={styles.authSubtitle}>Lépj be a robot irányításához és a ranglistához!</p>
+      <div className={styles.authEyebrow}>Dusza2026 · Üdv újra</div>
+      <h2 className={styles.authTitle}>Folytasd a kalandot!</h2>
+      <p className={styles.authSubtitle}>Jelentkezz be, és folytasd a kincskeresést a robotoddal!</p>
 
-      {errorMessage && <div className={styles.alertError}>⚠️ {errorMessage}</div>}
+      {errorMessage && <div className={styles.alertError} role="alert">⚠️ {errorMessage}</div>}
 
       <form onSubmit={handleLogin}>
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Felhasználónév:</label>
+          <label className={styles.formLabel} htmlFor="login-username">Felhasználónév</label>
           <input
+            id="login-username"
             type="text"
             className={styles.formInput}
             value={username}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
             required
             placeholder="Pl. jatekos1"
+            autoComplete="username"
             disabled={loading}
           />
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Jelszó:</label>
+          <label className={styles.formLabel} htmlFor="login-password">Jelszó</label>
           <PasswordInput
+            id="login-password"
             className={styles.formInput}
             value={password}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             required
             placeholder="••••••••"
+            autoComplete="current-password"
             disabled={loading}
           />
         </div>
