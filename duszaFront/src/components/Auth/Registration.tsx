@@ -43,7 +43,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
 
     try {
       const response = await axios.post<RegisterResponseData>(
-        'http://127.0.0.1:8000/api/register/',
+        '/api/register/',
         {
           username: username.trim(),
           password: password,
@@ -79,7 +79,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
           setErrorMessage('Regisztrációs hiba történt.');
         }
       } else {
-        setErrorMessage('Nem sikerült csatlakozni a szerverhez (http://127.0.0.1:8000).');
+        setErrorMessage('Nem sikerült csatlakozni a szerverhez.');
       }
     } finally {
       setLoading(false);

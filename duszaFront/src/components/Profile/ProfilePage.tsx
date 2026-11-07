@@ -37,7 +37,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, onAvatarChange }) => 
     const token = localStorage.getItem('authToken');
     if (!token) return;
 
-    axios.get<ProfileData>('http://127.0.0.1:8000/api/profile/', {
+    axios.get<ProfileData>('/api/profile/', {
       headers: { Authorization: `Token ${token}` },
     }).then(response => {
       setProfile(response.data);
@@ -63,7 +63,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, onAvatarChange }) => 
     setSavingAvatar(true);
     try {
       const response = await axios.patch<ProfileData>(
-        'http://127.0.0.1:8000/api/profile/',
+        '/api/profile/',
         { avatar_id: selectedAvatarId },
         { headers: { Authorization: `Token ${token}` } }
       );
@@ -93,7 +93,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, onAvatarChange }) => 
     setChangingPassword(true);
     try {
       const response = await axios.post<{ message: string }>(
-        'http://127.0.0.1:8000/api/change-password/',
+        '/api/change-password/',
         {
           old_password: oldPassword,
           new_password: newPassword,

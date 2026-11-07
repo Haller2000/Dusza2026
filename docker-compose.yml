@@ -1,0 +1,23 @@
+services:
+  backend:
+    build: ./duszaBackend
+    restart: unless-stopped
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?set DJANGO_SECRET_KEY in .env}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?set DJANGO_ALLOWED_HOSTS in .env}
+      DJANGO_DEBUG: "0"
+      DJANGO_DB_PATH: /app/data/db.sqlite3
+    volumes:
+      - backend-data:/app/data
+    command: sh -c "python manage.py migrate --noinput && exec gunicorn --bind 0.0.0.0:8000 duszaRobot.wsgi:application"
+
+  frontend:
+    build: ./duszaFront
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  backend-data:

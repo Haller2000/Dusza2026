@@ -152,7 +152,7 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
 
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.get<StoredMap[]>('http://127.0.0.1:8000/api/maps/', {
+      const response = await axios.get<StoredMap[]>('/api/maps/', {
         headers: token ? { Authorization: `Token ${token}` } : {},
       });
       setDatabaseMaps(response.data);
@@ -238,8 +238,8 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
     try {
       const updateExistingMap = editingMapId !== null && !saveAsNew;
       const url = updateExistingMap
-        ? `http://127.0.0.1:8000/api/maps/${editingMapId}/`
-        : 'http://127.0.0.1:8000/api/maps/';
+        ? `/api/maps/${editingMapId}/`
+        : '/api/maps/';
       const response = await axios({
         method: updateExistingMap ? 'put' : 'post',
         url,

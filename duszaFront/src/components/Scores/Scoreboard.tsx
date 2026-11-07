@@ -38,7 +38,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({ onBack }) => {
     setLoading(true);
     setErrorMessage('');
 
-    axios.get<LeaderboardResponse>('http://127.0.0.1:8000/api/leaderboard/', {
+    axios.get<LeaderboardResponse>('/api/leaderboard/', {
       params: selectedMapId ? { map: selectedMapId } : {},
       signal: controller.signal,
     }).then(response => {

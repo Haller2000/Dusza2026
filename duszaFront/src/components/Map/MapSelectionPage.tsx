@@ -29,7 +29,7 @@ const MapSelectionPage: React.FC<MapSelectionPageProps> = ({ onBack, onStart }) 
     const token = localStorage.getItem('authToken');
     if (!token) return;
 
-    axios.get<SelectableMap[]>('http://127.0.0.1:8000/api/maps/', {
+    axios.get<SelectableMap[]>('/api/maps/', {
       headers: { Authorization: `Token ${token}` },
     }).then(response => {
       setMaps(response.data);
