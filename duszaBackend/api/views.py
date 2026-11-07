@@ -1,6 +1,8 @@
-from django.db.models import Q
+from django.db import IntegrityError, transaction
+from django.db.models import Avg, Count, Max, Q, Sum
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
@@ -27,12 +29,30 @@ class MapViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Map.objects.filter(Q(is_builtin=True) | Q(created_by=self.request.user))
 
+    def save_map(self, save):
+        try:
+            with transaction.atomic():
+                save()
+        except IntegrityError as error:
+            error_text = str(error)
+            if (
+                'unique_user_map_name' in error_text
+                or 'api_map.created_by_id, api_map.name' in error_text
+            ):
+                raise ValidationError({
+                    'name': ['Nem menthető a pálya, mert már van saját pályád ugyanezzel a névvel.']
+                }) from error
+            raise
+
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        self.save_map(lambda: serializer.save(created_by=self.request.user))
+
+    def perform_update(self, serializer):
+        self.save_map(serializer.save)
 
 # 2. Ranglista / Eredmények kezelése (Itt adjuk hozzá a rendezést!)
 class ScoreViewSet(viewsets.ModelViewSet):
-    queryset = Score.objects.all().order_by('-gold_count', 'step_count') # Több arany előre (-), kevesebb lépés (+)
+    queryset = Score.objects.all().order_by('-points', '-gold_count', 'step_count')
     serializer_class = ScoreSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
@@ -137,3 +157,40 @@ def change_password(request):
     request.user.set_password(new_password)
     request.user.save(update_fields=['password'])
     return Response({'message': 'A jelszó sikeresen megváltozott.'})
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def user_statistics(request):
+    user_scores = Score.objects.filter(user=request.user)
+    totals = user_scores.aggregate(
+        games_played=Count('id'),
+        total_gold=Sum('gold_count'),
+        total_steps=Sum('step_count'),
+        total_points=Sum('points'),
+        average_points=Avg('points'),
+        best_points=Max('points'),
+        best_gold=Max('gold_count'),
+    )
+    recent_games = user_scores.select_related('map').order_by('-created_at', '-id')[:5]
+
+    return Response({
+        'games_played': totals['games_played'],
+        'total_gold': totals['total_gold'] or 0,
+        'total_steps': totals['total_steps'] or 0,
+        'total_points': totals['total_points'] or 0,
+        'average_points': totals['average_points'] or 0,
+        'best_points': totals['best_points'] or 0,
+        'best_gold': totals['best_gold'] or 0,
+        'recent_games': [
+            {
+                'id': score.id,
+                'map_name': score.map.name,
+                'points': score.points,
+                'gold_count': score.gold_count,
+                'step_count': score.step_count,
+                'created_at': score.created_at,
+            }
+            for score in recent_games
+        ],
+    })

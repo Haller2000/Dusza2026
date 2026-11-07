@@ -1,3 +1,5 @@
+from decimal import Decimal, ROUND_HALF_UP
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -24,6 +26,15 @@ class Map(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['created_by', 'name'],
+                condition=models.Q(is_builtin=False, created_by__isnull=False),
+                name='unique_user_map_name',
+            ),
+        ]
+
     def __str__(self):
         return self.name
 
@@ -37,3 +48,16 @@ class Score(models.Model):
     steps = models.JSONField(default=list) # A megtett lépések listája (ArrayField helyett)
     gold_count = models.IntegerField(default=0)     # Kibányászott aranyak száma
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        self.points = (
+            (Decimal(self.gold_count) / Decimal(self.step_count)).quantize(
+                Decimal('0.01'),
+                rounding=ROUND_HALF_UP,
+            )
+            if self.step_count > 0
+            else Decimal('0.00')
+        )
+        if kwargs.get('update_fields') is not None:
+            kwargs['update_fields'] = set(kwargs['update_fields']) | {'points'}
+        super().save(*args, **kwargs)

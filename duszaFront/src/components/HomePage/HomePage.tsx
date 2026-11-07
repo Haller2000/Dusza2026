@@ -3,6 +3,7 @@ import MapEditor from '../Map/MapEditor';
 import MyMapsPage from '../Map/MyMapsPage';
 import MapSelectionPage, { type SelectableMap } from '../Map/MapSelectionPage';
 import ProfilePage from '../Profile/ProfilePage';
+import StatisticsPage from '../Scores/StatisticsPage';
 import Navbar from './Navbar/Navbar';
 import styles from './HomePage.module.css';
 
@@ -85,29 +86,7 @@ const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange,
           <p>A játékmenet később kerül ide.</p>
         </main>
       )}
-      {section === 'statistics' && (
-        <main className={styles.pageContent}>
-          <button type="button" onClick={() => setSection('home')} className={styles.backButton}>
-            Vissza a főoldalra
-          </button>
-          <h1>Statisztika</h1>
-          <p className={styles.pageDescription}>A játékok és eredmények statisztikái itt jelennek majd meg.</p>
-          <div className={styles.statisticsGrid}>
-            <section className={styles.statisticCard}>
-              <span>Lejátszott játékok</span>
-              <strong>—</strong>
-            </section>
-            <section className={styles.statisticCard}>
-              <span>Összegyűjtött arany</span>
-              <strong>—</strong>
-            </section>
-            <section className={styles.statisticCard}>
-              <span>Összes lépés</span>
-              <strong>—</strong>
-            </section>
-          </div>
-        </main>
-      )}
+      {section === 'statistics' && <StatisticsPage onBack={() => setSection('home')} />}
       {section === 'profile' && (
         <ProfilePage
           onBack={() => setSection('home')}

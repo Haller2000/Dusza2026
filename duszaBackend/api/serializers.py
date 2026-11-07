@@ -8,10 +8,25 @@ class MapSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'width', 'height', 'map_data', 'is_builtin', 'created_by', 'created_at']
         read_only_fields = ['is_builtin', 'created_by', 'created_at']
 
+    def validate_name(self, value):
+        user = self.context['request'].user
+        matching_maps = Map.objects.filter(
+            created_by=user,
+            is_builtin=False,
+            name=value,
+        )
+        if self.instance:
+            matching_maps = matching_maps.exclude(pk=self.instance.pk)
+        if matching_maps.exists():
+            raise serializers.ValidationError(
+                'Nem menthető a pálya, mert már van saját pályád ugyanezzel a névvel.'
+            )
+        return value
+
     def validate(self, data):
-        width = data.get('width')
-        height = data.get('height')
-        map_data = data.get('map_data')
+        width = data.get('width', self.instance.width if self.instance else None)
+        height = data.get('height', self.instance.height if self.instance else None)
+        map_data = data.get('map_data', self.instance.map_data if self.instance else None)
 
         # 1. Méretek ellenőrzése (1 és 15 között)
         if not (1 <= width <= 15) or not (1 <= height <= 15):
@@ -47,5 +62,5 @@ class ScoreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Score
-        fields = ['id', 'user', 'username', 'map', 'gold_count', 'step_count', 'created_at']
-        read_only_fields = ['user', 'created_at']
+        fields = ['id', 'user', 'username', 'map', 'gold_count', 'step_count', 'points', 'created_at']
+        read_only_fields = ['user', 'points', 'created_at']

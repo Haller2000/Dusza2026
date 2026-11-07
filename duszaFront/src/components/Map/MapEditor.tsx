@@ -25,7 +25,34 @@ interface StoredMap {
   width: number;
   height: number;
   map_data: string;
+  is_builtin: boolean;
 }
+
+const getApiErrorMessage = (data: unknown): string | null => {
+  if (typeof data === 'string') return data;
+  if (Array.isArray(data)) {
+    for (const item of data) {
+      const message = getApiErrorMessage(item);
+      if (message) return message;
+    }
+    return null;
+  }
+  if (data && typeof data === 'object') {
+    const errors = data as Record<string, unknown>;
+    const preferredKeys = ['name', 'detail', 'non_field_errors'];
+    for (const key of preferredKeys) {
+      if (key in errors) {
+        const message = getApiErrorMessage(errors[key]);
+        if (message) return message;
+      }
+    }
+    for (const value of Object.values(errors)) {
+      const message = getApiErrorMessage(value);
+      if (message) return message;
+    }
+  }
+  return null;
+};
 
 export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
   const [mapName, setMapName] = useState<string>('Új Pálya');
@@ -43,6 +70,7 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
   const [databaseMapsVisible, setDatabaseMapsVisible] = useState<boolean>(false);
   const [databaseMaps, setDatabaseMaps] = useState<StoredMap[]>([]);
   const [selectedMapId, setSelectedMapId] = useState<string>('');
+  const [editingMapId, setEditingMapId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
 
@@ -157,6 +185,7 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
       setWidth(selectedMap.width);
       setHeight(selectedMap.height);
       setGrid(loadedGrid);
+      setEditingMapId(selectedMap.is_builtin ? null : selectedMap.id);
       setDatabaseMapsVisible(false);
       setErrorMessage('');
       setSuccessMessage(`A(z) „${selectedMap.name}” pálya betöltve az adatbázisból.`);
@@ -166,7 +195,7 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
   };
 
   // Mentés a backendre a token használatával
-  const handleSaveMap = async () => {
+  const handleSaveMap = async (saveAsNew = false) => {
     setErrorMessage('');
     setSuccessMessage('');
     setLoading(true);
@@ -175,34 +204,43 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
     const token = localStorage.getItem('authToken');
 
     try {
-      await axios.post(
-        'http://127.0.0.1:8000/api/maps/',
-        {
+      const updateExistingMap = editingMapId !== null && !saveAsNew;
+      const url = updateExistingMap
+        ? `http://127.0.0.1:8000/api/maps/${editingMapId}/`
+        : 'http://127.0.0.1:8000/api/maps/';
+      const response = await axios({
+        method: updateExistingMap ? 'put' : 'post',
+        url,
+        data: {
           name: mapName,
-          width: width,
-          height: height,
+          width,
+          height,
           map_data: mapDataText,
         },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Token ${token}` } : {}),
-          },
-        }
-      );
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Token ${token}` } : {}),
+        },
+      });
 
-      setSuccessMessage('Sikeres térképmentés a szerverre!');
+      setEditingMapId(response.data.id);
+      setSuccessMessage(
+        updateExistingMap
+          ? 'A pálya frissítése sikeres.'
+          : saveAsNew
+            ? 'A pálya új példányként sikeresen elmentve.'
+            : 'Sikeres térképmentés a szerverre!'
+      );
       if (onMapSaved) onMapSaved();
     } catch (err) {
-      const error = err as AxiosError<any>;
-      if (error.response && error.response.data) {
-        const data = error.response.data;
-        // Kigyűjtjük a backend serializers hibáit
-        const firstKey = Object.keys(data)[0];
-        const errorMsg = Array.isArray(data[firstKey]) ? data[firstKey][0] : data[firstKey];
-        setErrorMessage(typeof errorMsg === 'string' ? errorMsg : 'Hiba történt a mentés során.');
+      const error = err as AxiosError<unknown>;
+      if (error.response?.data) {
+        setErrorMessage(
+          getApiErrorMessage(error.response.data) ||
+          `Nem sikerült menteni a pályát (HTTP ${error.response.status}).`
+        );
       } else {
-        setErrorMessage('Nem sikerült elérni a szervert.');
+        setErrorMessage(error.message || 'Nem sikerült elérni a szervert.');
       }
     } finally {
       setLoading(false);
@@ -259,6 +297,7 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
         setWidth(parsedW);
         setHeight(parsedH);
         setGrid(newGrid);
+        setEditingMapId(null);
         setSuccessMessage('Sikeres fájl importálás!');
       } catch {
         alert('Hiba a fájl feldolgozása közben!');
@@ -336,9 +375,19 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
 
       {/* Műveleti gombok */}
       <div className={styles.operations}>
-        <button onClick={handleSaveMap} disabled={loading} className={`${styles.operationButton} ${styles.saveButton}`}>
-          {loading ? 'Mentés...' : '💾 Mentés Szerverre'}
+        <button onClick={() => handleSaveMap()} disabled={loading} className={`${styles.operationButton} ${styles.saveButton}`}>
+          {loading ? 'Mentés...' : editingMapId ? '💾 Pálya frissítése' : '💾 Mentés Szerverre'}
         </button>
+        {editingMapId && (
+          <button
+            type="button"
+            onClick={() => handleSaveMap(true)}
+            disabled={loading}
+            className={`${styles.operationButton} ${styles.saveButton}`}
+          >
+            💾 Mentés új néven
+          </button>
+        )}
         <button onClick={handleExportFile} className={`${styles.operationButton} ${styles.exportButton}`}>
           📥 Exportálás Fájlba
         </button>

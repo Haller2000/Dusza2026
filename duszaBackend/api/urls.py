@@ -1,6 +1,14 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import MapViewSet, ScoreViewSet, register_user, login_user, user_profile, change_password
+from .views import (
+    MapViewSet,
+    ScoreViewSet,
+    change_password,
+    login_user,
+    register_user,
+    user_profile,
+    user_statistics,
+)
 
 router = DefaultRouter()
 router.register(r'maps', MapViewSet, basename='map')
@@ -12,4 +20,5 @@ urlpatterns = [
     path('login/', login_user, name='login'), # EZT ADD HOZZÁ
     path('profile/', user_profile, name='profile'),
     path('change-password/', change_password, name='change-password'),
+    path('statistics/', user_statistics, name='statistics'),
 ]

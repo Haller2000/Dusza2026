@@ -1,7 +1,10 @@
+from decimal import Decimal
+from unittest.mock import patch
+
 from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework.test import APITestCase
-from .models import Map, UserProfile
+from .models import Map, Score, UserProfile
 
 
 class MapAccessTests(APITestCase):
@@ -102,6 +105,92 @@ class MapAccessTests(APITestCase):
         self.assertEqual(created_map.created_by, self.owner)
         self.assertFalse(created_map.is_builtin)
 
+    def test_user_cannot_create_two_maps_with_the_same_name(self):
+        self.client.force_authenticate(user=self.owner)
+
+        response = self.client.post(reverse('map-list'), {
+            'name': self.owner_map.name,
+            'width': 2,
+            'height': 1,
+            'map_data': '>.'
+        })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('name', response.data)
+        self.assertEqual(
+            response.data['name'][0],
+            'Nem menthető a pálya, mert már van saját pályád ugyanezzel a névvel.',
+        )
+
+    def test_database_duplicate_name_error_returns_a_friendly_api_response(self):
+        self.client.force_authenticate(user=self.owner)
+
+        with patch(
+            'api.serializers.MapSerializer.validate_name',
+            side_effect=lambda value: value,
+        ):
+            response = self.client.post(reverse('map-list'), {
+                'name': self.owner_map.name,
+                'width': 2,
+                'height': 1,
+                'map_data': '>.',
+            })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data['name'][0],
+            'Nem menthető a pálya, mert már van saját pályád ugyanezzel a névvel.',
+        )
+        self.assertEqual(Map.objects.filter(created_by=self.owner, name=self.owner_map.name).count(), 1)
+
+    def test_different_users_can_create_maps_with_the_same_name(self):
+        self.client.force_authenticate(user=self.other_user)
+
+        response = self.client.post(reverse('map-list'), {
+            'name': self.owner_map.name,
+            'width': 2,
+            'height': 1,
+            'map_data': '>.'
+        })
+
+        self.assertEqual(response.status_code, 201)
+
+    def test_user_can_update_the_loaded_map_without_creating_a_duplicate(self):
+        self.client.force_authenticate(user=self.owner)
+
+        response = self.client.put(
+            reverse('map-detail', args=[self.owner_map.id]),
+            {
+                'name': self.owner_map.name,
+                'width': 2,
+                'height': 1,
+                'map_data': '.>',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Map.objects.filter(created_by=self.owner, name=self.owner_map.name).count(), 1)
+        self.owner_map.refresh_from_db()
+        self.assertEqual(self.owner_map.map_data, '.>')
+
+    def test_user_cannot_rename_map_to_another_owned_maps_name(self):
+        self.client.force_authenticate(user=self.owner)
+        another_owned_map = Map.objects.create(
+            name='Another owner map',
+            width=2,
+            height=1,
+            map_data='>#',
+            created_by=self.owner,
+        )
+
+        response = self.client.patch(
+            reverse('map-detail', args=[self.owner_map.id]),
+            {'name': another_owned_map.name},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('name', response.data)
+
 
 class UserProfileTests(APITestCase):
     def setUp(self):
@@ -171,3 +260,136 @@ class UserProfileTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password('1'))
+
+
+class UserStatisticsTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='stats-user', password='password123')
+        self.other_user = User.objects.create_user(username='other-stats-user', password='password123')
+        self.map = Map.objects.create(
+            name='Stats map',
+            width=2,
+            height=1,
+            map_data='>@',
+            created_by=self.user,
+        )
+        self.other_map = Map.objects.create(
+            name='Other stats map',
+            width=2,
+            height=1,
+            map_data='>@',
+            created_by=self.other_user,
+        )
+
+    def test_statistics_aggregate_only_current_users_scores(self):
+        Score.objects.create(
+            user=self.user,
+            map=self.map,
+            gold_count=2,
+            step_count=7,
+            steps=[],
+        )
+        Score.objects.create(
+            user=self.user,
+            map=self.map,
+            gold_count=1,
+            step_count=4,
+            steps=[],
+        )
+        Score.objects.create(
+            user=self.other_user,
+            map=self.other_map,
+            gold_count=99,
+            step_count=1,
+            steps=[],
+        )
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(reverse('statistics'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['games_played'], 2)
+        self.assertEqual(response.data['total_gold'], 3)
+        self.assertEqual(response.data['total_steps'], 11)
+        self.assertEqual(response.data['total_points'], Decimal('0.54'))
+        self.assertEqual(response.data['average_points'], Decimal('0.27'))
+        self.assertEqual(response.data['best_points'], Decimal('0.29'))
+        self.assertEqual(response.data['best_gold'], 2)
+        self.assertEqual(len(response.data['recent_games']), 2)
+        self.assertTrue(all(item['map_name'] == self.map.name for item in response.data['recent_games']))
+
+    def test_score_points_are_gold_divided_by_steps_and_round_to_two_decimals(self):
+        score = Score.objects.create(
+            user=self.user,
+            map=self.map,
+            gold_count=1,
+            step_count=8,
+            steps=[],
+        )
+
+        self.assertEqual(score.points, Decimal('0.13'))
+
+    def test_zero_steps_produce_zero_points(self):
+        score = Score.objects.create(
+            user=self.user,
+            map=self.map,
+            gold_count=3,
+            step_count=0,
+            steps=[],
+        )
+
+        self.assertEqual(score.points, Decimal('0.00'))
+
+    def test_score_endpoint_calculates_points_instead_of_accepting_client_value(self):
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(
+            reverse('score-list'),
+            {
+                'map': self.map.id,
+                'gold_count': 2,
+                'step_count': 4,
+                'points': '999.99',
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['points'], '0.50')
+
+    def test_score_list_is_ordered_by_points(self):
+        lower_score = Score.objects.create(
+            user=self.user,
+            map=self.map,
+            gold_count=1,
+            step_count=4,
+            steps=[],
+        )
+        higher_score = Score.objects.create(
+            user=self.other_user,
+            map=self.other_map,
+            gold_count=1,
+            step_count=2,
+            steps=[],
+        )
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(reverse('score-list'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([item['id'] for item in response.data], [higher_score.id, lower_score.id])
+
+    def test_empty_statistics_return_zero_totals_and_no_games(self):
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(reverse('statistics'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['games_played'], 0)
+        self.assertEqual(response.data['total_gold'], 0)
+        self.assertEqual(response.data['total_steps'], 0)
+        self.assertEqual(response.data['recent_games'], [])
+
+    def test_statistics_require_authentication(self):
+        response = self.client.get(reverse('statistics'))
+
+        self.assertEqual(response.status_code, 401)

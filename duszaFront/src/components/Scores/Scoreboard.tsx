@@ -9,6 +9,7 @@ interface ScoreItem {
   map: number;
   gold_count: number;
   step_count: number;
+  points: number;
   created_at: string;
 }
 
@@ -39,6 +40,7 @@ export const Scoreboard: React.FC = () => {
   return (
     <div className={styles.scoreboard}>
       <h2>🏆 Ranglista (Scoreboard)</h2>
+      <p>A pontszám az összegyűjtött arany és a lépések számának hányadosa.</p>
 
       {scores.length === 0 ? (
         <p>Még nincsenek elmentett eredmények.</p>
@@ -48,6 +50,7 @@ export const Scoreboard: React.FC = () => {
             <tr className={styles.headerRow}>
               <th className={styles.headerCell}>Helyezés</th>
               <th className={styles.headerCell}>Játékos</th>
+              <th className={styles.headerCell}>Pontszám</th>
               <th className={styles.headerCell}>🪙 Arany</th>
               <th className={styles.headerCell}>🐾 Lépés</th>
               <th className={styles.headerCell}>Dátum</th>
@@ -60,6 +63,9 @@ export const Scoreboard: React.FC = () => {
                   {index === 0 ? '🥇 1.' : index === 1 ? '🥈 2.' : index === 2 ? '🥉 3.' : `${index + 1}.`}
                 </td>
                 <td className={styles.cell}>{score.username}</td>
+                <td className={styles.cell}>
+                  {Number(score.points).toLocaleString('hu-HU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </td>
                 <td className={`${styles.cell} ${styles.goldCell}`}>
                   {score.gold_count} db
                 </td>
