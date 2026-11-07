@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, type FormEvent, type ChangeEvent } from 'react';
+import React, { useState, type FormEvent, type ChangeEvent } from 'react';
 import axios, { AxiosError } from 'axios';
 import styles from './Auth.module.css';
 import PasswordInput from './PasswordInput';
@@ -24,21 +24,10 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [avatarId, setAvatarId] = useState<number>(1);
   const [avatarPickerOpen, setAvatarPickerOpen] = useState<boolean>(false);
-  const avatarOptionsRef = useRef<HTMLDivElement>(null);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
-
-  useEffect(() => {
-    if (!avatarPickerOpen) return;
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    avatarOptionsRef.current?.scrollIntoView({
-      behavior: prefersReducedMotion ? 'auto' : 'smooth',
-      block: 'center',
-    });
-  }, [avatarPickerOpen]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -170,7 +159,6 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
           </button>
           {avatarPickerOpen && (
             <div
-              ref={avatarOptionsRef}
               className={styles.avatarOptions}
               id="register-avatar-options"
             >

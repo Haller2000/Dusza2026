@@ -1,4 +1,4 @@
-import React, { useState, type ChangeEvent } from 'react';
+import React, { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import axios, { AxiosError } from 'axios';
 import MapTileIcon, { type MapTile } from './MapTileIcon';
 import styles from './MapEditor.module.css';
@@ -59,7 +59,18 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
   const [mapName, setMapName] = useState<string>('Új Pálya');
   const [width, setWidth] = useState<number>(10);
   const [height, setHeight] = useState<number>(10);
-  const cellSize = Math.min(570 / Math.max(width, height), 72);
+  const gridViewportRef = useRef<HTMLDivElement>(null);
+  const [viewportSize, setViewportSize] = useState({ width: 570, height: 570 });
+  const availableWidth = Math.min(570, viewportSize.width - 18);
+  const availableHeight = Math.min(570, viewportSize.height - 18);
+  const cellSize = Math.max(
+    1,
+    Math.min(
+      72,
+      (availableWidth - (width - 1) * 3) / width,
+      (availableHeight - (height - 1) * 3) / height
+    )
+  );
   
   const [grid, setGrid] = useState<CellType[][]>(() => createEmptyGrid(width, height));
   
@@ -73,6 +84,21 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
   const [editingMapId, setEditingMapId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
+
+  useEffect(() => {
+    const viewport = gridViewportRef.current;
+    if (!viewport) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      setViewportSize({
+        width: viewport.clientWidth,
+        height: viewport.clientHeight,
+      });
+    });
+    resizeObserver.observe(viewport);
+
+    return () => resizeObserver.disconnect();
+  }, []);
 
   const handleWidthChange = (value: string) => {
     const newWidth = Math.max(1, Math.min(15, parseInt(value, 10) || 1));
@@ -359,7 +385,7 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
         <button onClick={() => setSelectedTool('v')} className={selectedTool === 'v' ? styles.selectedTool : ''}><MapTileIcon cell="v" className={`${styles.cellIcon} ${styles.toolIcon}`} /> Dél</button>
       </div>
 
-      <div className={styles.gridViewport}>
+      <div ref={gridViewportRef} className={styles.gridViewport}>
         <div className={styles.gridBoard}>
           {grid.map((row, rIndex) => (
             <div key={rIndex} className={styles.gridRow}>

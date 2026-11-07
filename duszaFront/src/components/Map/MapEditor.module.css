@@ -131,15 +131,16 @@
 .gridViewport {
   display: flex;
   width: 100%;
-  min-height: 590px;
+  height: 590px;
   box-sizing: border-box;
   align-items: center;
+  justify-content: center;
   overflow: auto;
-  margin-bottom: 20px;
+  margin: 0 auto 20px;
   padding: 9px;
-  border: 2px solid #c9b98f;
-  border-radius: 26px;
-  background: linear-gradient(135deg, #f6efdd, #efe5cc);
+  border: 1px solid #282e55;
+  border-radius: 22px;
+  background: rgb(17 21 45 / 82%);
   box-shadow: 0 14px 34px rgb(0 0 0 / 22%);
 }
 
