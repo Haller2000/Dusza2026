@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import MapEditor from '../Map/MapEditor';
+import MyMapsPage from '../Map/MyMapsPage';
 import MapSelectionPage, { type SelectableMap } from '../Map/MapSelectionPage';
 import ProfilePage from '../Profile/ProfilePage';
 import Navbar from './Navbar/Navbar';
@@ -113,20 +114,7 @@ const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange,
           onAvatarChange={onAvatarChange}
         />
       )}
-      {section === 'maps' && (
-        <main className={styles.pageContent}>
-          <button type="button" onClick={() => setSection('home')} className={styles.backButton}>
-            Vissza a főoldalra
-          </button>
-          <h1>Saját pályák</h1>
-          <p className={styles.pageDescription}>Az általad készített pályák itt jelennek majd meg.</p>
-          <section className={styles.mapsPlaceholder}>
-            <span className={styles.mapsPlaceholderIcon} aria-hidden="true">▦</span>
-            <strong>Még nincsenek megjeleníthető pályák</strong>
-            <span>A pályáid listája később itt lesz elérhető.</span>
-          </section>
-        </main>
-      )}
+      {section === 'maps' && <MyMapsPage onBack={() => setSection('home')} />}
     </div>
   );
 };

@@ -9,8 +9,6 @@
 
 .accountMenu {
   position: relative;
-  padding-bottom: 6px;
-  margin-bottom: -6px;
 }
 
 .accountButton {
@@ -34,7 +32,7 @@
 .accountPanel {
   position: absolute;
   z-index: 1;
-  top: calc(100% + 6px);
+  top: 100%;
   right: 0;
   width: min(320px, calc(100vw - 32px));
   padding: 8px 12px;

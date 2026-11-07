@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import UserAvatar from '../../Profile/UserAvatar';
 import styles from './Navbar.module.css';
 
@@ -11,8 +11,25 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ username, avatarId, handleLogout, onNavigate }) => {
 	const [accountMenuOpen, setAccountMenuOpen] = useState<boolean>(false);
+	const closeMenuTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	useEffect(() => () => {
+		if (closeMenuTimeout.current) clearTimeout(closeMenuTimeout.current);
+	}, []);
+
+	const handleMenuMouseEnter = () => {
+		if (closeMenuTimeout.current) clearTimeout(closeMenuTimeout.current);
+		setAccountMenuOpen(true);
+	};
+
+	const handleMenuMouseLeave = () => {
+		closeMenuTimeout.current = setTimeout(() => {
+			setAccountMenuOpen(false);
+		}, 250);
+	};
 
 	const navigateTo = (page: 'profile' | 'statistics' | 'maps') => {
+		if (closeMenuTimeout.current) clearTimeout(closeMenuTimeout.current);
 		setAccountMenuOpen(false);
 		onNavigate(page);
 	};
@@ -21,8 +38,8 @@ const Navbar: React.FC<NavbarProps> = ({ username, avatarId, handleLogout, onNav
 		<nav className={styles.navbar}>
 			<div
 				className={styles.accountMenu}
-				onMouseEnter={() => setAccountMenuOpen(true)}
-				onMouseLeave={() => setAccountMenuOpen(false)}
+				onMouseEnter={handleMenuMouseEnter}
+				onMouseLeave={handleMenuMouseLeave}
 			>
 				<button
 					type="button"
