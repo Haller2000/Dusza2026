@@ -5,6 +5,7 @@ import MapSelectionPage, { type SelectableMap } from '../Map/MapSelectionPage';
 import ProfilePage from '../Profile/ProfilePage';
 import StatisticsPage from '../Scores/StatisticsPage';
 import Navbar from './Navbar/Navbar';
+import mapImage from '../../assets/map.svg';
 import styles from './HomePage.module.css';
 
 interface HomePageProps {
@@ -36,27 +37,37 @@ const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange,
       />
       {profileError && <div role="alert" className={styles.profileError}>{profileError}</div>}
       {section === 'home' && (
-        <>
+        <main className={styles.hero}>
+          <p className={styles.eyebrow}>// tanulj kódolni játszi könnyedséggel</p>
+          <h1 className={styles.heroTitle}>
+            Programozz, bányássz,
+            <br />
+            <span>és gyűjts értékes aranyat.</span>
+          </h1>
+          <p className={styles.heroDescription}>
+            Írj utasításokat, vezesd a robotot a barlangon át, és gyűjtsd össze az összes aranyat.
+          </p>
           <div className={styles.homeActions}>
             <button
               type="button"
               onClick={() => setSection('map-selection')}
-              className={styles.homeActionButton}
+              className={`${styles.homeActionButton} ${styles.primaryAction}`}
             >
-              Játék
+              Játék indítása <span aria-hidden="true">→</span>
             </button>
             <button
               type="button"
               onClick={() => setSection('editor')}
-              className={styles.homeActionButton}
+              className={`${styles.homeActionButton} ${styles.secondaryAction}`}
             >
               Pályaszerkesztő
             </button>
           </div>
-          <main className={styles.homeContent}>
-            <h1>HomePage</h1>
-          </main>
-        </>
+          <figure className={styles.boardFigure}>
+            <img src={mapImage} alt="Robot, aranyak és akadályok egy négyzetrácsos pályán" />
+            <figcaption><span aria-hidden="true">●</span> Mintapálya</figcaption>
+          </figure>
+        </main>
       )}
       {section === 'editor' && (
         <>

@@ -36,6 +36,10 @@ const Navbar: React.FC<NavbarProps> = ({ username, avatarId, handleLogout, onNav
 
 	return (
 		<nav className={styles.navbar}>
+			<div className={styles.brand}>
+				<span className={styles.brandMark} aria-hidden="true">◆</span>
+				<span>KincsKereső Robot</span>
+			</div>
 			<div
 				className={styles.accountMenu}
 				onMouseEnter={handleMenuMouseEnter}
@@ -51,7 +55,9 @@ const Navbar: React.FC<NavbarProps> = ({ username, avatarId, handleLogout, onNav
 					aria-label={`Fiókmenü: ${username}`}
 					title={username}
 				>
-					<UserAvatar avatarId={avatarId} size={44} />
+					<UserAvatar avatarId={avatarId} size={24} />
+					<span>{username}</span>
+					<span className={styles.accountChevron} aria-hidden="true">⌄</span>
 				</button>
 				{accountMenuOpen && (
 					<div id="account-menu" className={styles.accountPanel}>
