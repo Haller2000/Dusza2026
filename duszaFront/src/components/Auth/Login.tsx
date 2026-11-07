@@ -31,7 +31,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     try {
       const normalizedUsername = username.trim();
       const response = await axios.post<LoginResponseData>(
-        'http://127.0.0.1:8000/api/login/',
+        '/api/login/',
         {
           username: normalizedUsername,
           password: password,

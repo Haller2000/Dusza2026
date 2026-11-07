@@ -68,7 +68,7 @@ const StatisticsPage: React.FC<StatisticsPageProps> = ({ onBack }) => {
     const token = localStorage.getItem('authToken');
     if (!token) return;
 
-    axios.get<StatisticsData>('http://127.0.0.1:8000/api/statistics/', {
+    axios.get<StatisticsData>('/api/statistics/', {
       headers: { Authorization: `Token ${token}` },
     }).then(response => {
       setStatistics(response.data);

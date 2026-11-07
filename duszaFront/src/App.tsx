@@ -20,7 +20,7 @@ const App = () => {
 		const token = localStorage.getItem('authToken');
 		if (!token) return;
 
-		axios.get<ProfileResponse>('http://127.0.0.1:8000/api/profile/', {
+		axios.get<ProfileResponse>('/api/profile/', {
 			headers: { Authorization: `Token ${token}` },
 		}).then(response => {
 			setUsername(response.data.username);
