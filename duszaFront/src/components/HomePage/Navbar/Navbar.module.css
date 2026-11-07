@@ -1,10 +1,28 @@
 .navbar {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 20px;
-  padding: 10px;
-  background: #f1f5f9;
-  border-radius: 6px;
+  min-height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 24px;
+  border-bottom: 1px solid rgb(128 143 207 / 10%);
+  color: #eef0ff;
+  background: rgb(9 11 26 / 72%);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.brandMark {
+  color: #62d4f4;
+  font-size: 14px;
+  text-shadow: 0 0 12px rgb(98 212 244 / 55%);
 }
 
 .accountMenu {
@@ -12,21 +30,30 @@
 }
 
 .accountButton {
-  display: grid;
-  width: 48px;
-  height: 48px;
-  place-items: center;
-  padding: 0;
-  border: 2px solid #cbd5e1;
-  border-radius: 50%;
-  background: #fff;
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 11px;
+  border: 1px solid #272b56;
+  border-radius: 9px;
+  color: #eef0ff;
+  background: #12152d;
   cursor: pointer;
+  font: inherit;
+  font-size: 13px;
 }
 
 .accountButton:hover,
 .accountButton:focus-visible {
-  border-color: #2563eb;
+  border-color: #515c9c;
   outline: none;
+}
+
+.accountChevron {
+  color: #a4afd3;
+  font-size: 16px;
+  line-height: 1;
 }
 
 .accountPanel {
@@ -36,17 +63,17 @@
   right: 0;
   width: min(320px, calc(100vw - 32px));
   padding: 8px 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #30365f;
   border-radius: 8px;
-  color: #0f172a;
-  background: #fff;
-  box-shadow: 0 12px 28px rgb(15 23 42 / 18%);
+  color: #eef0ff;
+  background: #141831;
+  box-shadow: 0 12px 28px rgb(0 0 0 / 35%);
 }
 
 .accountName {
   padding: 7px 6px 10px;
-  border-bottom: 1px solid #e2e8f0;
-  color: #64748b;
+  border-bottom: 1px solid #30365f;
+  color: #a4afd3;
   font-size: 12px;
   font-weight: 600;
 }
@@ -59,18 +86,18 @@
   padding: 10px 6px;
   border: 0;
   border-radius: 6px;
-  color: #0f172a;
+  color: #eef0ff;
   background: transparent;
   cursor: pointer;
   text-align: left;
 }
 
 .menuLink + .menuLink {
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #30365f;
 }
 
 .menuLink:hover {
-  background: #f8fafc;
+  background: #1c2142;
 }
 
 .menuIcon {
@@ -80,8 +107,8 @@
   flex: 0 0 30px;
   place-items: center;
   border-radius: 5px;
-  color: #2563eb;
-  background: #dbeafe;
+  color: #75d6f6;
+  background: #202952;
   font-size: 18px;
 }
 
@@ -102,7 +129,7 @@
 }
 
 .menuArrow {
-  color: #94a3b8;
+  color: #a4afd3;
   font-size: 22px;
 }
 
@@ -113,10 +140,21 @@
   border: 0;
   border-radius: 5px;
   color: #fff;
-  background: #dc2626;
+  background: #a93652;
   cursor: pointer;
 }
 
 .logoutButton:hover {
-  background: #b91c1c;
+  background: #c34864;
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0 14px;
+  }
+
+  .brand {
+    gap: 7px;
+    font-size: 12px;
+  }
 }
