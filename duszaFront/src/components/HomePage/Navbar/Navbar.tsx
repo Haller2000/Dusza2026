@@ -88,18 +88,6 @@ const Navbar: React.FC<NavbarProps> = ({ username, avatarId, handleLogout, onNav
 						</button>
 						<button
 							type="button"
-							onClick={() => navigateTo('leaderboard')}
-							className={styles.menuLink}
-						>
-							<span className={styles.menuIcon} aria-hidden="true">🏆</span>
-							<span>
-								<strong>Ranglista</strong>
-								<small>Játékosok legjobb eredményei</small>
-							</span>
-							<span className={styles.menuArrow} aria-hidden="true">›</span>
-						</button>
-						<button
-							type="button"
 							onClick={() => navigateTo('maps')}
 							className={styles.menuLink}
 						>
