@@ -11,11 +11,33 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ username, avatarId, handleLogout, onNavigate }) => {
 	const [accountMenuOpen, setAccountMenuOpen] = useState<boolean>(false);
+	const accountMenuRef = useRef<HTMLDivElement>(null);
 	const closeMenuTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	useEffect(() => () => {
 		if (closeMenuTimeout.current) clearTimeout(closeMenuTimeout.current);
 	}, []);
+
+	useEffect(() => {
+		if (!accountMenuOpen) return;
+
+		const handleOutsidePointerDown = (event: PointerEvent) => {
+			if (!accountMenuRef.current?.contains(event.target as Node)) {
+				setAccountMenuOpen(false);
+			}
+		};
+		const handleEscape = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') setAccountMenuOpen(false);
+		};
+
+		document.addEventListener('pointerdown', handleOutsidePointerDown);
+		document.addEventListener('keydown', handleEscape);
+
+		return () => {
+			document.removeEventListener('pointerdown', handleOutsidePointerDown);
+			document.removeEventListener('keydown', handleEscape);
+		};
+	}, [accountMenuOpen]);
 
 	const handleMenuMouseEnter = () => {
 		if (closeMenuTimeout.current) clearTimeout(closeMenuTimeout.current);
@@ -42,6 +64,7 @@ const Navbar: React.FC<NavbarProps> = ({ username, avatarId, handleLogout, onNav
 			</div>
 			<div
 				className={styles.accountMenu}
+				ref={accountMenuRef}
 				onMouseEnter={handleMenuMouseEnter}
 				onMouseLeave={handleMenuMouseLeave}
 			>
@@ -50,7 +73,10 @@ const Navbar: React.FC<NavbarProps> = ({ username, avatarId, handleLogout, onNav
 					aria-expanded={accountMenuOpen}
 					aria-haspopup="true"
 					aria-controls="account-menu"
-					onClick={() => setAccountMenuOpen(!accountMenuOpen)}
+					onClick={() => {
+						if (closeMenuTimeout.current) clearTimeout(closeMenuTimeout.current);
+						setAccountMenuOpen(true);
+					}}
 					className={styles.accountButton}
 					aria-label={`Fiókmenü: ${username}`}
 					title={username}

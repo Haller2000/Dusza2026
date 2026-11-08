@@ -13,6 +13,32 @@
   font-weight: 800;
 }
 
+.backButton {
+  margin: 0 0 22px;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #333a66;
+  border-radius: 9px;
+  color: #eef0ff;
+  background: #191e3d;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.backButton:hover {
+  transform: translateY(-3px);
+  border-color: #7885a8;
+  box-shadow: 0 12px 22px rgb(0 0 0 / 30%), 0 0 16px rgb(113 215 190 / 12%);
+}
+
+.backButton:focus-visible {
+  outline: 2px solid #bce7a8;
+  outline-offset: 3px;
+}
+
 .alertError,
 .alertSuccess {
   margin-bottom: 16px;
@@ -299,6 +325,7 @@
 .databaseLoader button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgb(0 0 0 / 28%);
+  color: #3c291a;
 }
 
 .hiddenInput {
@@ -353,6 +380,22 @@
 .editorShell h2 {
   color: #674127;
   text-shadow: 1px 2px 0 #e1c18b;
+}
+
+.backButton {
+  border: 2px solid #7d5030;
+  border-radius: 3px;
+  color: #624326;
+  background: #efd7a9;
+  box-shadow: 0 3px 0 #9c7043;
+}
+
+.backButton:hover {
+  transform: translateY(-2px);
+  border-color: #593923;
+  color: #3e2918;
+  background: #f8e7c2;
+  box-shadow: 0 4px 0 #80512d;
 }
 
 .alertError,
@@ -418,6 +461,7 @@
   border-color: #593923;
   background: #f8e7c2;
   box-shadow: 0 3px 0 #80512d;
+  color:#3c291a;
 }
 
 .selectedTool {

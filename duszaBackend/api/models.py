@@ -15,7 +15,7 @@ class Map(models.Model):
     width = models.IntegerField()
     height = models.IntegerField()
     map_data = models.TextField()
-    script = models.JSONField(default=list)
+    script = models.ForeignKey('Script', on_delete=models.SET_NULL, null=True, blank=True, default=None)
     is_builtin = models.BooleanField(default=False)
     created_by = models.ForeignKey(
         User,
@@ -43,8 +43,8 @@ class Score(models.Model):
     map = models.ForeignKey(Map, on_delete=models.CASCADE, related_name='scores')
     map_snapshot = models.JSONField(default=dict, blank=True)
     map_complete = models.TextField(default='')
-    points = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) 
-    script = models.JSONField(default=list, null=True, blank=True)
+    points = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    script = models.ForeignKey('Script', on_delete=models.SET_NULL, null=True, blank=True, default=None)
     step_count = models.IntegerField(default=0)
     steps = models.JSONField(default=list)
     gold_count = models.IntegerField(default=0)
@@ -71,3 +71,27 @@ class Score(models.Model):
         if kwargs.get('update_fields') is not None:
             kwargs['update_fields'] = set(kwargs['update_fields']) | {'points'}
         super().save(*args, **kwargs)
+
+class Script(models.Model):
+    name = models.CharField(max_length=100)
+    code = models.TextField()
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='scripts_created_by',
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['created_by', 'name'],
+                condition=models.Q(created_by__isnull=False),
+                name='unique_user_script_name',
+            ),
+        ]
+
+    def __str__(self):
+        return self.name

@@ -4,6 +4,7 @@ import MapTileIcon, { type MapTile } from './MapTileIcon';
 import styles from './MapEditor.module.css';
 
 interface MapEditorProps {
+  onBack: () => void;
   onMapSaved?: () => void;
 }
 
@@ -55,7 +56,7 @@ const getApiErrorMessage = (data: unknown): string | null => {
   return null;
 };
 
-export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
+export const MapEditor: React.FC<MapEditorProps> = ({ onBack, onMapSaved }) => {
   const [mapName, setMapName] = useState<string>('Új Pálya');
   const [width, setWidth] = useState<number>(10);
   const [height, setHeight] = useState<number>(10);
@@ -338,7 +339,10 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
 
   return (
     <div className={styles.editorShell}>
-      <h2>🗺️ Térképszerkesztő</h2>
+      <button type="button" onClick={onBack} className={styles.backButton}>
+        ← Vissza a főoldalra
+      </button>
+      <h2>Térképszerkesztő</h2>
       
       {errorMessage && <div className={styles.alertError}>⚠️ {errorMessage}</div>}
       {successMessage && <div className={styles.alertSuccess}>✅ {successMessage}</div>}
@@ -406,7 +410,7 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
 
       <div className={styles.operations}>
         <button onClick={() => handleSaveMap()} disabled={loading} className={`${styles.operationButton} ${styles.saveButton}`}>
-          {loading ? 'Mentés...' : editingMapId ? '💾 Pálya frissítése' : '💾 Mentés Szerverre'}
+          {loading ? 'Mentés...' : editingMapId ? 'Pálya frissítése' : 'Mentés Szerverre'}
         </button>
         {editingMapId && (
           <button
@@ -415,14 +419,14 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
             disabled={loading}
             className={`${styles.operationButton} ${styles.saveButton}`}
           >
-            💾 Mentés új néven
+            Mentés új néven
           </button>
         )}
         <button onClick={handleExportFile} className={`${styles.operationButton} ${styles.exportButton}`}>
-          📥 Exportálás Fájlba
+          Exportálás Fájlba
         </button>
         <label className={`${styles.operationButton} ${styles.importButton}`}>
-          📂 Importálás Fájlból
+          Importálás Fájlból
           <input type="file" accept=".txt" onChange={handleImportFile} className={styles.hiddenInput} />
         </label>
         <button
@@ -431,7 +435,7 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
           disabled={databaseLoading}
           className={`${styles.operationButton} ${styles.databaseButton}`}
         >
-          {databaseLoading ? 'Pályák betöltése...' : databaseMapsVisible ? 'Lista bezárása' : '🗄️ Betöltés adatbázisból'}
+          {databaseLoading ? 'Pályák betöltése...' : databaseMapsVisible ? 'Lista bezárása' : 'Betöltés adatbázisból'}
         </button>
       </div>
       {databaseMapsVisible && (

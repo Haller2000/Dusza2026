@@ -1,13 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 import type { SelectableMap } from '../Map/MapSelectionPage';
 import MapTileIcon, { type MapTile } from '../Map/MapTileIcon';
 import { validateMineScript, type MineScriptDiagnostic } from './mineScriptValidator';
-import {
-	createInitialRuntimeFrame,
-	executeMineScript,
-	MineScriptRuntimeError,
-	type RuntimeFrame,
-} from './mineScriptRuntime';
 import styles from './Game.module.css';
 
 interface GameProps {
@@ -15,18 +10,54 @@ interface GameProps {
 	onBack: () => void;
 }
 
-const renderFoggedMap = (map: SelectableMap, frame: RuntimeFrame) => {
-	const direction: Record<RobotDirection, [number, number]> = {
+interface StoredScript {
+	id: number;
+	name: string;
+	code: string;
+}
+
+interface EditorScript extends StoredScript {
+	savedId: number | null;
+}
+
+const getApiErrorMessage = (data: unknown): string | null => {
+	if (typeof data === 'string') return data;
+	if (Array.isArray(data)) {
+		for (const item of data) {
+			const message = getApiErrorMessage(item);
+			if (message) return message;
+		}
+		return null;
+	}
+	if (data && typeof data === 'object') {
+		const errors = data as Record<string, unknown>;
+		for (const key of ['name', 'code', 'detail', 'non_field_errors']) {
+			if (key in errors) {
+				const message = getApiErrorMessage(errors[key]);
+				if (message) return message;
+			}
+		}
+		for (const value of Object.values(errors)) {
+			const message = getApiErrorMessage(value);
+			if (message) return message;
+		}
+	}
+	return null;
+};
+
+const renderFoggedMap = (map: SelectableMap) => {
+	const rows = map.map_data.trim().split(/\r?\n/).map(row => [...row]);
+	const robot = rows.flatMap((row, y) => row.map((cell, x) => ({ cell, x, y })))
+		.find(({ cell }) => ['>', '<', '^', 'v'].includes(cell));
+	const direction = robot ? {
 		'>': [1, 0],
 		'<': [-1, 0],
 		'^': [0, -1],
 		'v': [0, 1],
-	};
-	const [dx, dy] = direction[frame.facing];
-	const frontX = frame.robotX + dx;
-	const frontY = frame.robotY + dy;
-	const frontInBounds = frontY >= 0 && frontY < frame.mapGrid.length && frontX >= 0 && frontX < (frame.mapGrid[frontY]?.length ?? 0);
-	const explored = new Set(frame.explored);
+	}[robot.cell] : undefined;
+	const frontX = robot && direction ? robot.x + direction[0] : -1;
+	const frontY = robot && direction ? robot.y + direction[1] : -1;
+	const frontInBounds = frontY >= 0 && frontY < rows.length && frontX >= 0 && frontX < (rows[frontY]?.length ?? 0);
 
 	return (
 		<div
@@ -37,15 +68,13 @@ const renderFoggedMap = (map: SelectableMap, frame: RuntimeFrame) => {
 		>
 			{Array.from({ length: map.height }, (_, y) =>
 				Array.from({ length: map.width }, (_, x) => {
-					const isRobot = frame.robotX === x && frame.robotY === y;
+					const isRobot = robot?.x === x && robot.y === y;
 					const isFront = frontInBounds && frontX === x && frontY === y;
-					const isExplored = explored.has(`${x},${y}`);
-					const tile = isRobot ? frame.facing : isFront || isExplored ? frame.mapGrid[y]?.[x] ?? '.' : '.';
+					const tile = isRobot || isFront ? rows[y]?.[x] ?? '.' : '.';
 					const className = [
 						styles.fogTile,
 						isRobot ? styles.robotTile : '',
 						isFront ? styles.litTile : '',
-						!isRobot && !isFront && !isExplored ? styles.hiddenTile : '',
 					].filter(Boolean).join(' ');
 
 					return (
@@ -59,43 +88,7 @@ const renderFoggedMap = (map: SelectableMap, frame: RuntimeFrame) => {
 	);
 };
 
-type RobotDirection = RuntimeFrame['facing'];
-
-interface GameScript {
-	id: number;
-	name: string;
-	code: string;
-}
-
-const emptyScript: GameScript = { id: 1, name: 'Script 1', code: '' };
-
-const getScriptsStorageKey = (map: SelectableMap) => {
-	const username = localStorage.getItem('username') || 'guest';
-	return `dusza2026:scripts:${encodeURIComponent(username)}:${map.id}`;
-};
-
-const loadScripts = (storageKey: string): GameScript[] => {
-	try {
-		const storedScripts: unknown = JSON.parse(localStorage.getItem(storageKey) || 'null');
-		if (
-			Array.isArray(storedScripts) &&
-			storedScripts.length > 0 &&
-			storedScripts.every(script =>
-				script &&
-				typeof script.id === 'number' &&
-				typeof script.name === 'string' &&
-				typeof script.code === 'string'
-			)
-		) {
-			return storedScripts;
-		}
-	} catch {
-		return [emptyScript];
-	}
-	return [emptyScript];
-};
-
-const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[], currentLine: number) => {
+const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]) => {
 	let lineStart = 0;
 	return code.split('\n').map((line, lineIndex) => {
 		const lineEnd = lineStart + line.length;
@@ -110,7 +103,7 @@ const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]
 
 		if (!line.length) {
 			return (
-				<span key={lineIndex} className={`${lineDiagnostics.length ? styles.invalidCodeLine : ''} ${currentLine === lineIndex + 1 ? styles.runningCodeLine : ''}`}>
+				<span key={lineIndex} className={lineDiagnostics.length ? styles.invalidCodeLine : undefined}>
 					{lineDiagnostics.length ? <span className={styles.invalidCode}>{'\u00a0'}</span> : '\u00a0'}
 				</span>
 			);
@@ -132,7 +125,7 @@ const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]
 		if (cursor < line.length) segments.push(line.slice(cursor));
 
 		return (
-			<span key={lineIndex} className={`${lineDiagnostics.length ? styles.invalidCodeLine : ''} ${currentLine === lineIndex + 1 ? styles.runningCodeLine : ''}`}>
+			<span key={lineIndex} className={lineDiagnostics.length ? styles.invalidCodeLine : undefined}>
 				{segments}
 			</span>
 		);
@@ -140,46 +133,66 @@ const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]
 };
 
 const Game: React.FC<GameProps> = ({ map, onBack }) => {
-	const storageKey = getScriptsStorageKey(map);
-	const [scripts, setScripts] = useState<GameScript[]>(() => loadScripts(storageKey));
-	const [saveStatus, setSaveStatus] = useState('Automatikus mentés');
+	const [scripts, setScripts] = useState<EditorScript[]>([
+		{ id: 1, savedId: null, name: 'Script 1', code: '' },
+	]);
 	const [activeScriptId, setActiveScriptId] = useState<number | null>(null);
 	const [isRenamingScript, setIsRenamingScript] = useState(false);
 	const [scriptNameDraft, setScriptNameDraft] = useState('');
-	const [runtimeFrame, setRuntimeFrame] = useState<RuntimeFrame>(() => createInitialRuntimeFrame(map));
-	const [isRunning, setIsRunning] = useState(false);
-	const [runtimeError, setRuntimeError] = useState<MineScriptRuntimeError | null>(null);
+	const [isLoadingScripts, setIsLoadingScripts] = useState(
+		() => Boolean(localStorage.getItem('authToken'))
+	);
+	const [isSavingScript, setIsSavingScript] = useState(false);
+	const [isDeletingScript, setIsDeletingScript] = useState(false);
+	const [scriptError, setScriptError] = useState(() =>
+		localStorage.getItem('authToken') ? '' : 'A scriptek mentéséhez be kell jelentkezni.'
+	);
+	const [scriptStatus, setScriptStatus] = useState('');
 	const scriptEditorRef = useRef<HTMLTextAreaElement>(null);
 	const scriptHighlightRef = useRef<HTMLPreElement>(null);
-	const timerRef = useRef<number | null>(null);
-	const executionRef = useRef<Generator<RuntimeFrame> | null>(null);
 	const activeScript = scripts.find(script => script.id === activeScriptId);
 	const diagnostics = activeScript ? validateMineScript(activeScript.code) : [];
 
-	const saveScripts = (nextScripts: GameScript[]) => {
-		setScripts(nextScripts);
-		try {
-			localStorage.setItem(storageKey, JSON.stringify(nextScripts));
-			setSaveStatus('Automatikusan mentve');
-		} catch {
-			setSaveStatus('Nem sikerült menteni');
+	useEffect(() => {
+		let isMounted = true;
+		const token = localStorage.getItem('authToken');
+		if (!token) {
+			return () => {
+				isMounted = false;
+			};
 		}
-	};
 
-	useEffect(() => () => {
-		if (timerRef.current !== null) window.clearTimeout(timerRef.current);
-		executionRef.current?.return(undefined);
+		axios.get<StoredScript[]>('/api/scripts/', {
+			headers: { Authorization: `Token ${token}` },
+		}).then(response => {
+			if (isMounted && response.data.length > 0) {
+				setScripts(response.data.map(script => ({ ...script, savedId: script.id })));
+			}
+		}).catch((error: unknown) => {
+			if (isMounted) {
+				const responseData = axios.isAxiosError(error) ? error.response?.data : null;
+				setScriptError(
+					getApiErrorMessage(responseData) || 'Nem sikerült betölteni a mentett scripteket.'
+				);
+			}
+		}).finally(() => {
+			if (isMounted) setIsLoadingScripts(false);
+		});
+
+		return () => {
+			isMounted = false;
+		};
 	}, []);
 
 	const addScript = () => {
 		const id = Math.max(...scripts.map(script => script.id)) + 1;
-		saveScripts([...scripts, { id, name: `Script ${id}`, code: '' }]);
+		setScripts(current => [...current, { id, savedId: null, name: `Script ${id}`, code: '' }]);
 		setActiveScriptId(null);
 		setIsRenamingScript(false);
 	};
 
 	const updateScriptName = (id: number, name: string) => {
-		saveScripts(scripts.map(script =>
+		setScripts(current => current.map(script =>
 			script.id === id ? { ...script, name } : script
 		));
 	};
@@ -190,61 +203,83 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 		setIsRenamingScript(false);
 	};
 
-	const removeActiveScript = () => {
-		if (scripts.length < 2) return;
+	const removeActiveScript = async () => {
+		if (!activeScript || scripts.length < 2) return;
+		setScriptError('');
+		setScriptStatus('');
+		if (activeScript.savedId !== null) {
+			const token = localStorage.getItem('authToken');
+			if (!token) {
+				setScriptError('A script törléséhez be kell jelentkezni.');
+				return;
+			}
+			setIsDeletingScript(true);
+			try {
+				await axios.delete(`/api/scripts/${activeScript.savedId}/`, {
+					headers: { Authorization: `Token ${token}` },
+				});
+			} catch (error: unknown) {
+				const responseData = axios.isAxiosError(error) ? error.response?.data : null;
+				setScriptError(
+					getApiErrorMessage(responseData) || 'Nem sikerült törölni a scriptet.'
+				);
+				setIsDeletingScript(false);
+				return;
+			}
+			setIsDeletingScript(false);
+		}
 		const remainingScripts = scripts.filter(script => script.id !== activeScriptId);
-		saveScripts(remainingScripts);
+		setScripts(remainingScripts);
 		setActiveScriptId(remainingScripts[0].id);
+		setScriptStatus('A script törölve.');
+	};
+
+	const saveActiveScript = async () => {
+		if (!activeScript) return;
+		const token = localStorage.getItem('authToken');
+		if (!token) {
+			setScriptError('A script mentéséhez be kell jelentkezni.');
+			return;
+		}
+
+		setIsSavingScript(true);
+		setScriptError('');
+		setScriptStatus('');
+		try {
+			const request = {
+				name: activeScript.name,
+				code: activeScript.code,
+			};
+			const config = { headers: { Authorization: `Token ${token}` } };
+			const response = activeScript.savedId === null
+				? await axios.post<StoredScript>('/api/scripts/', request, config)
+				: await axios.patch<StoredScript>(
+					`/api/scripts/${activeScript.savedId}/`,
+					request,
+					config,
+				);
+			setScripts(current => current.map(script =>
+				script.id === activeScript.id
+					? { ...response.data, savedId: response.data.id }
+					: script
+			));
+			setScriptStatus('A script külön elmentve.');
+		} catch (error: unknown) {
+			const responseData = axios.isAxiosError(error) ? error.response?.data : null;
+			setScriptError(
+				getApiErrorMessage(responseData) || 'Nem sikerült elmenteni a scriptet.'
+			);
+		} finally {
+			setIsSavingScript(false);
+		}
 	};
 
 	const updateActiveScript = (code: string) => {
-		saveScripts(scripts.map(script =>
+		setScriptError('');
+		setScriptStatus('');
+		setScripts(current => current.map(script =>
 			script.id === activeScriptId ? { ...script, code } : script
 		));
-	};
-
-	const stopExecution = () => {
-		if (timerRef.current !== null) window.clearTimeout(timerRef.current);
-		timerRef.current = null;
-		executionRef.current?.return(undefined);
-		executionRef.current = null;
-		setIsRunning(false);
-	};
-
-	const resetExecution = () => {
-		stopExecution();
-		setRuntimeFrame(createInitialRuntimeFrame(map));
-		setRuntimeError(null);
-	};
-
-	const startExecution = () => {
-		if (!activeScript || diagnostics.length || isRunning) return;
-		stopExecution();
-		setRuntimeFrame(createInitialRuntimeFrame(map));
-		setRuntimeError(null);
-		setIsRunning(true);
-
-		const execution = executeMineScript(activeScript.code, map);
-		executionRef.current = execution;
-		const advance = () => {
-			try {
-				const result = execution.next();
-				if (result.done) {
-					executionRef.current = null;
-					setIsRunning(false);
-					return;
-				}
-				setRuntimeFrame(result.value);
-				timerRef.current = window.setTimeout(advance, 350);
-			} catch (error) {
-				executionRef.current = null;
-				setIsRunning(false);
-				setRuntimeError(error instanceof MineScriptRuntimeError
-					? error
-					: new MineScriptRuntimeError('E_RUNTIME', runtimeFrame.currentLine, 'Váratlan futásidejű hiba történt.'));
-			}
-		};
-		advance();
 	};
 
 	return (
@@ -263,53 +298,19 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 						<span>{map.width} × {map.height}</span>
 					</div>
 					<div className={styles.board}>
-						{renderFoggedMap(map, runtimeFrame)}
-					</div>
-					<div className={styles.runtimeStats}>
-						<div><span>Arany</span><strong>{runtimeFrame.goldCollected}</strong></div>
-						<div><span>Utasítás</span><strong>{runtimeFrame.instructionCount} / 1000</strong></div>
-						<div><span>Robot</span><strong>{runtimeFrame.robotX + 1}, {runtimeFrame.robotY + 1}</strong></div>
-						<div><span>Irány</span><strong>{runtimeFrame.facing}</strong></div>
-					</div>
-					{runtimeError && (
-						<div className={styles.runtimeError} role="alert">
-							<strong>{runtimeError.code}</strong>
-							<span>{runtimeError.line > 0 ? `${runtimeError.line}. sor: ` : ''}{runtimeError.message}</span>
-						</div>
-					)}
-					<div className={styles.runtimeConsole} aria-live="polite">
-						<strong>Konzol</strong>
-						<div className={styles.consoleOutput}>
-							{runtimeFrame.consoleOutput.length ? runtimeFrame.consoleOutput.map((output, index) => (
-								<div key={`${index}-${output}`}>{output}</div>
-							)) : <span className={styles.emptyConsole}>Nincs kimenet</span>}
-						</div>
+						{renderFoggedMap(map)}
 					</div>
 				</section>
 				<section className={styles.scriptsPanel} aria-label="Scriptek">
 					<div className={styles.panelHeading}>
-						<div className={styles.scriptsHeading}>
-							<h2>Scriptek</h2>
-							<span className={saveStatus === 'Nem sikerült menteni' ? styles.saveError : styles.saveStatus} role="status">{saveStatus}</span>
-						</div>
-						<button type="button" onClick={addScript} className={styles.addButton} title="Új script">
+						<h2>Scriptek</h2>
+						<button type="button" onClick={addScript} className={styles.addButton} title="Új script" disabled={isLoadingScripts}>
 							<span aria-hidden="true">+</span> Új
 						</button>
 					</div>
-					<div className={styles.runtimeToolbar}>
-						<span>{activeScript ? `Futtatás: ${activeScript.name}` : 'Nyiss meg egy scriptet a futtatáshoz.'}</span>
-						<div className={styles.runtimeActions}>
-							<button type="button" onClick={startExecution} disabled={!activeScript || diagnostics.length > 0 || isRunning} className={styles.runButton}>
-								Futtatás
-							</button>
-							<button type="button" onClick={stopExecution} disabled={!isRunning} className={styles.controlButton}>
-								Leállítás
-							</button>
-							<button type="button" onClick={resetExecution} className={styles.controlButton}>
-								Alaphelyzet
-							</button>
-						</div>
-					</div>
+					{isLoadingScripts && <div className={styles.scriptFeedback}>Mentett scriptek betöltése...</div>}
+					{scriptError && <div className={styles.scriptFeedbackError} role="alert">{scriptError}</div>}
+					{scriptStatus && <div className={styles.scriptFeedback} role="status">{scriptStatus}</div>}
 					{activeScript ? (
 						<div className={styles.scriptEditorPanel}>
 							<div className={styles.editorToolbar}>
@@ -343,24 +344,29 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 										← Vissza a scriptekhez
 									</button>
 									{!isRenamingScript && (
-										<button
-											type="button"
-											onClick={() => { setScriptNameDraft(activeScript.name); setIsRenamingScript(true); }}
-											className={styles.backToScriptsButton}
-										>
-											Név módosítása
-										</button>
+										<>
+											<button type="button" onClick={saveActiveScript} className={styles.saveNameButton} disabled={isSavingScript || isDeletingScript}>
+												{isSavingScript ? 'Mentés...' : activeScript.savedId === null ? 'Script mentése' : 'Script frissítése'}
+											</button>
+											<button
+												type="button"
+												onClick={() => { setScriptNameDraft(activeScript.name); setIsRenamingScript(true); }}
+												className={styles.backToScriptsButton}
+											>
+												Név módosítása
+											</button>
+										</>
 									)}
 									{scripts.length > 1 && (
-										<button type="button" onClick={removeActiveScript} className={styles.removeButton}>
-											Script törlése
+										<button type="button" onClick={removeActiveScript} className={styles.removeButton} disabled={isDeletingScript || isSavingScript}>
+											{isDeletingScript ? 'Törlés...' : 'Script törlése'}
 										</button>
 									)}
 								</div>
 							</div>
 							<div className={styles.scriptEditorFrame}>
 								<pre ref={scriptHighlightRef} className={styles.scriptHighlight} aria-hidden="true">
-									{renderScriptHighlight(activeScript.code, diagnostics, runtimeFrame.currentLine)}
+									{renderScriptHighlight(activeScript.code, diagnostics)}
 								</pre>
 								<textarea
 									ref={scriptEditorRef}

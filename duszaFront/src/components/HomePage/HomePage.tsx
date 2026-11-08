@@ -40,7 +40,6 @@ const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange,
       {profileError && <div role="alert" className={styles.profileError}>{profileError}</div>}
       {section === 'home' && (
         <main className={styles.hero}>
-          <p className={styles.eyebrow}>// tanulj kódolni játszi könnyedséggel</p>
           <h1 className={styles.heroTitle}>
             Programozz, bányássz,
             <br />
@@ -78,16 +77,7 @@ const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange,
         </main>
       )}
       {section === 'editor' && (
-        <>
-          <button
-            type="button"
-            onClick={() => setSection('home')}
-            className={styles.backButton}
-          >
-            Vissza a főoldalra
-          </button>
-          <MapEditor />
-        </>
+        <MapEditor onBack={() => setSection('home')} />
       )}
       {section === 'map-selection' && (
         <MapSelectionPage
