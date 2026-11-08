@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Game from '../Game/Game';
 import MapEditor from '../Map/MapEditor';
 import MyMapsPage from '../Map/MyMapsPage';
 import MapSelectionPage, { type SelectableMap } from '../Map/MapSelectionPage';
@@ -96,14 +97,7 @@ const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange,
         />
       )}
       {section === 'game' && selectedGameMap && (
-        <main className={styles.gamePlaceholder}>
-          <button type="button" onClick={() => setSection('map-selection')} className={styles.backButton}>
-            ← Vissza a pályaválasztóhoz
-          </button>
-          <span className={styles.gameEyebrow}>KIVÁLASZTOTT PÁLYA</span>
-          <h1>{selectedGameMap.name}</h1>
-          <p>A játékmenet később kerül ide.</p>
-        </main>
+        <Game map={selectedGameMap} onBack={() => setSection('map-selection')} />
       )}
       {section === 'statistics' && <StatisticsPage onBack={() => setSection('home')} />}
       {section === 'leaderboard' && <Scoreboard onBack={() => setSection('home')} />}
