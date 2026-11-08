@@ -4,6 +4,7 @@ import MapTileIcon, { type MapTile } from './MapTileIcon';
 import styles from './MapEditor.module.css';
 
 interface MapEditorProps {
+  onBack: () => void;
   onMapSaved?: () => void;
 }
 
@@ -55,7 +56,7 @@ const getApiErrorMessage = (data: unknown): string | null => {
   return null;
 };
 
-export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
+export const MapEditor: React.FC<MapEditorProps> = ({ onBack, onMapSaved }) => {
   const [mapName, setMapName] = useState<string>('Új Pálya');
   const [width, setWidth] = useState<number>(10);
   const [height, setHeight] = useState<number>(10);
@@ -338,6 +339,9 @@ export const MapEditor: React.FC<MapEditorProps> = ({ onMapSaved }) => {
 
   return (
     <div className={styles.editorShell}>
+      <button type="button" onClick={onBack} className={styles.backButton}>
+        ← Vissza a főoldalra
+      </button>
       <h2>🗺️ Térképszerkesztő</h2>
       
       {errorMessage && <div className={styles.alertError}>⚠️ {errorMessage}</div>}

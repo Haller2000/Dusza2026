@@ -78,16 +78,7 @@ const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange,
         </main>
       )}
       {section === 'editor' && (
-        <>
-          <button
-            type="button"
-            onClick={() => setSection('home')}
-            className={styles.backButton}
-          >
-            Vissza a főoldalra
-          </button>
-          <MapEditor />
-        </>
+        <MapEditor onBack={() => setSection('home')} />
       )}
       {section === 'map-selection' && (
         <MapSelectionPage
