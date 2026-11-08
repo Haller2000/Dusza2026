@@ -142,7 +142,7 @@ const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]
 const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const storageKey = getScriptsStorageKey(map);
 	const [scripts, setScripts] = useState<GameScript[]>(() => loadScripts(storageKey));
-	const [saveStatus, setSaveStatus] = useState('Mentés folyamatban...');
+	const [saveStatus, setSaveStatus] = useState('Automatikus mentés');
 	const [activeScriptId, setActiveScriptId] = useState<number | null>(null);
 	const [isRenamingScript, setIsRenamingScript] = useState(false);
 	const [scriptNameDraft, setScriptNameDraft] = useState('');
@@ -156,14 +156,15 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const activeScript = scripts.find(script => script.id === activeScriptId);
 	const diagnostics = activeScript ? validateMineScript(activeScript.code) : [];
 
-	useEffect(() => {
+	const saveScripts = (nextScripts: GameScript[]) => {
+		setScripts(nextScripts);
 		try {
-			localStorage.setItem(storageKey, JSON.stringify(scripts));
+			localStorage.setItem(storageKey, JSON.stringify(nextScripts));
 			setSaveStatus('Automatikusan mentve');
 		} catch {
 			setSaveStatus('Nem sikerült menteni');
 		}
-	}, [scripts, storageKey]);
+	};
 
 	useEffect(() => () => {
 		if (timerRef.current !== null) window.clearTimeout(timerRef.current);
@@ -172,13 +173,13 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 
 	const addScript = () => {
 		const id = Math.max(...scripts.map(script => script.id)) + 1;
-		setScripts(current => [...current, { id, name: `Script ${id}`, code: '' }]);
+		saveScripts([...scripts, { id, name: `Script ${id}`, code: '' }]);
 		setActiveScriptId(null);
 		setIsRenamingScript(false);
 	};
 
 	const updateScriptName = (id: number, name: string) => {
-		setScripts(current => current.map(script =>
+		saveScripts(scripts.map(script =>
 			script.id === id ? { ...script, name } : script
 		));
 	};
@@ -192,12 +193,12 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const removeActiveScript = () => {
 		if (scripts.length < 2) return;
 		const remainingScripts = scripts.filter(script => script.id !== activeScriptId);
-		setScripts(remainingScripts);
+		saveScripts(remainingScripts);
 		setActiveScriptId(remainingScripts[0].id);
 	};
 
 	const updateActiveScript = (code: string) => {
-		setScripts(current => current.map(script =>
+		saveScripts(scripts.map(script =>
 			script.id === activeScriptId ? { ...script, code } : script
 		));
 	};

@@ -1,10 +1,11 @@
 .homePage {
   min-height: 100svh;
-  color: #f3f5ff;
+  color: var(--world-ink);
   background:
-    linear-gradient(155deg, transparent 0 25%, rgb(33 45 63 / 24%) 25.1% 48%, transparent 48.1%),
-    linear-gradient(155deg, transparent 0 64%, rgb(30 50 46 / 18%) 64.1% 100%),
-    #090b1a;
+    radial-gradient(circle, rgb(114 80 46 / 7%) 1px, transparent 1.5px),
+    radial-gradient(ellipse at 50% 30%, rgb(255 249 229 / 92%), transparent 64%),
+    linear-gradient(180deg, #f8ebce 0%, #f4e1b8 78%, #e6c994 100%);
+  background-size: 8px 8px, 100% 100%, 100% 100%;
   text-align: left;
 }
 
@@ -241,6 +242,106 @@
 .backButton:focus-visible {
   outline: 2px solid #bce7a8;
   outline-offset: 3px;
+}
+
+.homePage {
+  color: var(--world-ink);
+  background:
+    radial-gradient(circle, rgb(114 80 46 / 7%) 1px, transparent 1.5px),
+    radial-gradient(ellipse at 50% 30%, rgb(255 249 229 / 92%), transparent 64%),
+    linear-gradient(180deg, #f8ebce 0%, #f4e1b8 78%, #e6c994 100%);
+  background-size: 8px 8px, 100% 100%, 100% 100%;
+}
+
+.profileError {
+  border: 1px solid #9c513d;
+  border-radius: 4px;
+  color: #7a3025;
+  background: #f5d6bd;
+}
+
+.eyebrow {
+  color: #59432c;
+}
+
+.heroTitle {
+  color: #674127;
+  text-shadow: 2px 3px 0 #f4d9ac, 3px 4px 0 #5c3a24;
+}
+
+.heroTitle span {
+  color: #6b733e;
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  text-shadow: 2px 3px 0 #e7d49e, 3px 4px 0 #4e482a;
+}
+
+.heroDescription {
+  color: #5e4932;
+}
+
+.homeActionButton {
+  border: 2px solid #694326;
+  border-radius: 4px;
+  box-shadow: inset 0 2px 0 rgb(255 239 193 / 58%), 0 4px 0 #80512d, 0 8px 14px rgb(91 57 29 / 18%);
+}
+
+.homeActionButton:hover {
+  transform: translateY(-2px);
+  filter: none;
+  box-shadow: inset 0 2px 0 rgb(255 239 193 / 78%), 0 5px 0 #80512d, 0 10px 16px rgb(91 57 29 / 22%);
+}
+
+.primaryAction {
+  color: #3c291a;
+  background: linear-gradient(180deg, #f0c77e, #d89c50);
+  text-shadow: 0 1px 0 rgb(255 245 215 / 60%);
+}
+
+.primaryAction:hover {
+  background: linear-gradient(180deg, #f7d58d, #e4a957);
+}
+
+.secondaryAction {
+  border-color: #593923;
+  color: #fff3d4;
+  background: linear-gradient(180deg, #a86e3d, #80502e);
+  box-shadow: inset 0 2px 0 rgb(255 228 179 / 34%), 0 4px 0 #593923;
+}
+
+.boardFigure {
+  background: radial-gradient(ellipse at center, rgb(145 205 162 / 20%), transparent 68%);
+}
+
+.boardFigure::before,
+.boardFigure::after {
+  border: 4px solid #281b1a;
+  border-radius: 12px;
+  background: #332321;
+  box-shadow: 0 0 0 3px #6b472b, 0 0 0 7px #302019;
+}
+
+.boardFigure figcaption {
+  color: #674127;
+}
+
+.gamePlaceholder {
+  border: 7px solid #261b19;
+  border-radius: 9px;
+  color: #4a321f;
+  background:
+    radial-gradient(circle, rgb(145 101 57 / 7%) 1px, transparent 1.5px),
+    linear-gradient(180deg, #fff1d2, #f3dfb8);
+  background-size: 11px 11px, 100% 100%;
+  box-shadow: 0 0 0 3px #7f542f, 0 0 0 6px #3a251b, 8px 12px 0 rgb(69 44 26 / 30%);
+}
+
+.gamePlaceholder h1 {
+  color: #54351f;
+}
+
+.gamePlaceholder p {
+  color: #765a3c;
 }
 
 @media (max-width: 600px) {

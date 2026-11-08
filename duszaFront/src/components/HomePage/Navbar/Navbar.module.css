@@ -6,23 +6,30 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0 24px;
-  border-bottom: 1px solid rgb(128 143 207 / 10%);
-  color: #eef0ff;
-  background: rgb(9 11 26 / 72%);
+  border: 4px solid #5b3b24;
+  border-top-width: 3px;
+  border-bottom-width: 5px;
+  color: #382416;
+  background:
+    repeating-linear-gradient(0deg, rgb(103 63 31 / 9%) 0 2px, transparent 2px 8px),
+    linear-gradient(180deg, #f3d9a8, #d9b477 52%, #e8c994);
+  box-shadow: 0 4px 0 rgb(78 49 29 / 30%), inset 0 2px 0 #fff0c8;
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
-  font-weight: 800;
+  color: #382416;
+  font-size: 16px;
+  font-weight: 900;
+  text-shadow: 1px 2px 0 #f4d8a4;
 }
 
 .brandMark {
-  color: #62d4f4;
-  font-size: 14px;
-  text-shadow: 0 0 12px rgb(98 212 244 / 55%);
+  color: #674127;
+  font-size: 20px;
+  text-shadow: 1px 2px 0 #51351f;
 }
 
 .accountMenu {
@@ -35,10 +42,11 @@
   align-items: center;
   gap: 8px;
   padding: 4px 11px;
-  border: 1px solid #272b56;
-  border-radius: 9px;
-  color: #eef0ff;
-  background: #12152d;
+  border: 2px solid #7d5030;
+  border-radius: 3px;
+  color: #624326;
+  background: #efd7a9;
+  box-shadow: 0 3px 0 #9c7043;
   cursor: pointer;
   font: inherit;
   font-size: 13px;
@@ -46,12 +54,14 @@
 
 .accountButton:hover,
 .accountButton:focus-visible {
-  border-color: #515c9c;
+  border-color: #593923;
+  color: #3e2918;
+  background: #f8e7c2;
   outline: none;
 }
 
 .accountChevron {
-  color: #a4afd3;
+  color: #876847;
   font-size: 16px;
   line-height: 1;
 }
@@ -63,17 +73,20 @@
   right: 0;
   width: min(320px, calc(100vw - 32px));
   padding: 8px 12px;
-  border: 1px solid #30365f;
-  border-radius: 8px;
-  color: #eef0ff;
-  background: #141831;
-  box-shadow: 0 12px 28px rgb(0 0 0 / 35%);
+  border: 4px solid #6f482b;
+  border-radius: 4px;
+  color: #55391f;
+  background:
+    radial-gradient(circle, rgb(145 101 57 / 10%) 1px, transparent 1.5px),
+    linear-gradient(180deg, #fff4d9, #f1d9ab);
+  background-size: 12px 12px, 100% 100%;
+  box-shadow: 4px 5px 0 rgb(69 44 26 / 28%);
 }
 
 .accountName {
   padding: 7px 6px 10px;
-  border-bottom: 1px solid #30365f;
-  color: #a4afd3;
+  border-bottom: 1px solid #c5a274;
+  color: #82603a;
   font-size: 12px;
   font-weight: 600;
 }
@@ -85,19 +98,19 @@
   gap: 10px;
   padding: 10px 6px;
   border: 0;
-  border-radius: 6px;
-  color: #eef0ff;
+  border-radius: 3px;
+  color: #55391f;
   background: transparent;
   cursor: pointer;
   text-align: left;
 }
 
 .menuLink + .menuLink {
-  border-top: 1px solid #30365f;
+  border-top: 1px solid #d5bd92;
 }
 
 .menuLink:hover {
-  background: #1c2142;
+  background: #fff9e9;
 }
 
 .menuIcon {
@@ -106,9 +119,10 @@
   height: 30px;
   flex: 0 0 30px;
   place-items: center;
-  border-radius: 5px;
-  color: #75d6f6;
-  background: #202952;
+  border: 1px solid #b88a55;
+  border-radius: 3px;
+  color: #557a45;
+  background: #fff3d4;
   font-size: 18px;
 }
 
@@ -124,12 +138,12 @@
 }
 
 .menuLink small {
-  color: #64748b;
+  color: #876847;
   font-size: 11px;
 }
 
 .menuArrow {
-  color: #a4afd3;
+  color: #876847;
   font-size: 22px;
 }
 
@@ -138,14 +152,16 @@
   margin: 4px 0 2px;
   padding: 8px 12px;
   border: 0;
-  border-radius: 5px;
-  color: #fff;
-  background: #a93652;
+  border: 2px solid #694326;
+  border-radius: 4px;
+  color: #fff3d4;
+  background: linear-gradient(180deg, #a86e3d, #80502e);
+  box-shadow: 0 3px 0 #593923;
   cursor: pointer;
 }
 
 .logoutButton:hover {
-  background: #c34864;
+  background: linear-gradient(180deg, #bb8050, #91603b);
 }
 
 @media (max-width: 480px) {

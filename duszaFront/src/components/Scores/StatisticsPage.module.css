@@ -294,3 +294,128 @@
     grid-template-columns: 1fr;
   }
 }
+
+.statisticsPage {
+  color: var(--world-ink);
+}
+
+.backButton {
+  border: 2px solid #7d5030;
+  border-radius: 3px;
+  color: #624326;
+  background: #efd7a9;
+  box-shadow: 0 3px 0 #9c7043;
+}
+
+.pageHeader {
+  border-bottom-color: #c9a878;
+}
+
+.eyebrow {
+  color: #82603a;
+}
+
+.pageHeader h1,
+.sectionHeading h2 {
+  color: #54351f;
+  text-shadow: 1px 2px 0 #e1c18b;
+}
+
+.pageHeader p,
+.sectionHeading p {
+  color: #765a3c;
+}
+
+.statisticCard,
+.gameRow {
+  border: 3px solid #b88a55;
+  border-radius: 5px;
+  background:
+    radial-gradient(circle, rgb(145 101 57 / 6%) 1px, transparent 1.5px),
+    linear-gradient(180deg, #fff4d9, #f1d9ab);
+  background-size: 11px 11px, 100% 100%;
+  box-shadow: 2px 3px 0 rgb(69 44 26 / 14%);
+}
+
+.statisticCard span,
+.gameMap time {
+  color: #82603a;
+}
+
+.statisticCard strong,
+.gameMetrics strong {
+  color: #4e6f3b;
+}
+
+.sectionHeading h2,
+.gameMap strong {
+  color: #54351f;
+}
+
+.gameCount {
+  border-color: #78834d;
+  border-radius: 4px;
+  color: #46532d;
+  background: #e6ebc8;
+}
+
+.gameMetrics {
+  color: #67482c;
+}
+
+.gameMetrics b {
+  color: #80551c;
+}
+
+.mapDetails {
+  border-top-color: #c9a878;
+}
+
+.mapDetails summary {
+  color: #4e6f3b;
+}
+
+.mapDetails summary:hover {
+  color: #38512e;
+}
+
+.mapDetails summary:focus-visible {
+  outline-color: var(--grass);
+}
+
+.mapDetailsInfo {
+  color: #765a3c;
+}
+
+.mapDetailsInfo strong {
+  color: #54351f;
+}
+
+.emptyState,
+.statusMessage,
+.errorMessage {
+  border-color: #b88a55;
+  border-radius: 4px;
+  color: #765a3c;
+  background:
+    radial-gradient(circle, rgb(145 101 57 / 7%) 1px, transparent 1.5px),
+    linear-gradient(180deg, #fff1d2, #f3dfb8);
+  background-size: 11px 11px, 100% 100%;
+}
+
+.emptyState strong {
+  color: #54351f;
+}
+
+.emptyIcon {
+  border: 2px solid #557a45;
+  border-radius: 4px;
+  color: #38512e;
+  background: #e4edcc;
+}
+
+.errorMessage {
+  border-color: #9c513d;
+  color: #7a3025;
+  background: #f5d6bd;
+}

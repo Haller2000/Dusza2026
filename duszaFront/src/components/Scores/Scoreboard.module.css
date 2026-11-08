@@ -170,3 +170,105 @@
     flex-direction: column;
   }
 }
+
+.page {
+  color: var(--world-ink);
+}
+
+.backButton {
+  border: 2px solid #7d5030;
+  border-radius: 3px;
+  color: #624326;
+  background: #efd7a9;
+  box-shadow: 0 3px 0 #9c7043;
+}
+
+.pageHeader {
+  border-bottom-color: #c9a878;
+}
+
+.eyebrow {
+  color: #82603a;
+}
+
+.pageHeader h1,
+.sectionHeading h2 {
+  color: #54351f;
+  text-shadow: 1px 2px 0 #e1c18b;
+}
+
+.pageHeader p,
+.sectionHeading p {
+  color: #765a3c;
+}
+
+.resultsSection {
+  border: 5px solid #6f482b;
+  border-radius: 5px;
+  background:
+    radial-gradient(circle, rgb(145 101 57 / 7%) 1px, transparent 1.5px),
+    linear-gradient(180deg, #fff1d2, #f3dfb8);
+  background-size: 11px 11px, 100% 100%;
+  box-shadow: 4px 5px 0 rgb(69 44 26 / 18%);
+}
+
+.sectionHeading h2 {
+  color: #54351f;
+}
+
+.filter {
+  color: #67482c;
+}
+
+.filter select {
+  border: 2px solid #a87b4b;
+  border-radius: 3px;
+  color: #452f1f;
+  background: #fff5dd;
+}
+
+.tableViewport {
+  border: 3px solid #6f482b;
+  border-radius: 4px;
+}
+
+.table th {
+  color: #fff3d4;
+  background: linear-gradient(180deg, #805632, #593b2b);
+}
+
+.table td {
+  border-top-color: #ddc69c;
+  color: #67482c;
+}
+
+.table tbody tr:nth-child(even) {
+  background: rgb(216 188 143 / 28%);
+}
+
+.rank,
+.points {
+  color: #80551c !important;
+}
+
+.player {
+  color: #54351f !important;
+}
+
+.status,
+.emptyState,
+.error {
+  border-color: #b88a55;
+  border-radius: 4px;
+  color: #765a3c;
+  background:
+    radial-gradient(circle, rgb(145 101 57 / 7%) 1px, transparent 1.5px),
+    linear-gradient(180deg, #fff1d2, #f3dfb8);
+  background-size: 11px 11px, 100% 100%;
+}
+
+.error {
+  border-color: #9c513d;
+  color: #7a3025;
+  background: #f5d6bd;
+}

@@ -348,3 +348,175 @@
     transition: none;
   }
 }
+
+.selectionPage {
+  color: var(--world-ink);
+}
+
+.backButton {
+  border: 2px solid #7d5030;
+  border-radius: 3px;
+  color: #624326;
+  background: #efd7a9;
+  box-shadow: 0 3px 0 #9c7043;
+}
+
+.backButton:hover {
+  border-color: #593923;
+  color: #3e2918;
+  background: #f8e7c2;
+  box-shadow: 0 4px 0 #80512d;
+}
+
+.backButton:focus-visible,
+.mapCard:focus-visible,
+.startButton:focus-visible {
+  outline-color: var(--grass);
+}
+
+.pageHeader {
+  border-bottom-color: #c9a878;
+}
+
+.eyebrow {
+  color: #82603a;
+}
+
+.pageHeader h1,
+.sectionHeading h2 {
+  color: #54351f;
+  text-shadow: 1px 2px 0 #e1c18b;
+}
+
+.pageHeader p,
+.sectionHeading p {
+  color: #765a3c;
+}
+
+.sectionCount {
+  border-color: #a87b4b;
+  border-radius: 4px;
+  color: #46532d;
+  background: #e6ebc8;
+}
+
+.mapCard {
+  border: 4px solid #6f482b;
+  border-radius: 5px;
+  color: #55391f;
+  background:
+    radial-gradient(circle, rgb(145 101 57 / 7%) 1px, transparent 1.5px),
+    linear-gradient(180deg, #fff4d9, #f1d9ab);
+  background-size: 11px 11px, 100% 100%;
+  box-shadow: 4px 5px 0 rgb(69 44 26 / 20%);
+}
+
+.mapCard:hover {
+  transform: translateY(-2px);
+  border-color: #805632;
+  box-shadow: 4px 7px 0 rgb(69 44 26 / 22%);
+}
+
+.selectedCard,
+.mapCard.selectedCard:hover {
+  border-color: #557a45;
+  box-shadow: 0 0 0 2px #8da969, 4px 5px 0 rgb(69 44 26 / 20%);
+}
+
+.mapName {
+  color: #54351f;
+}
+
+.badge {
+  border-color: #b88a55;
+  border-radius: 3px;
+  color: #67482c;
+  background: #fff3d4;
+}
+
+.goldBadge {
+  border-color: #c18a37;
+  color: #704b16;
+  background: #f6e1aa;
+}
+
+.sharedBadge {
+  border-color: #78834d;
+  color: #46532d;
+  background: #e6ebc8;
+}
+
+.ownBadge {
+  border-color: #6a8b4e;
+  color: #38512e;
+  background: #e4edcc;
+}
+
+.cardHint,
+.selectedCard .cardHint {
+  color: #557a45;
+}
+
+.emptyState,
+.statusMessage,
+.errorMessage {
+  border-color: #b88a55;
+  border-radius: 4px;
+  color: #765a3c;
+  background:
+    radial-gradient(circle, rgb(145 101 57 / 7%) 1px, transparent 1.5px),
+    linear-gradient(180deg, #fff1d2, #f3dfb8);
+  background-size: 11px 11px, 100% 100%;
+}
+
+.emptyState strong {
+  color: #54351f;
+}
+
+.emptyIcon {
+  border: 2px solid #557a45;
+  border-radius: 4px;
+  color: #38512e;
+  background: #e4edcc;
+}
+
+.errorMessage {
+  border-color: #9c513d;
+  color: #7a3025;
+  background: #f5d6bd;
+}
+
+.selectionFooter {
+  border: 4px solid #6f482b;
+  border-radius: 5px;
+  background:
+    repeating-linear-gradient(0deg, rgb(103 63 31 / 7%) 0 2px, transparent 2px 8px),
+    linear-gradient(180deg, #fff4d9, #f1d9ab);
+  box-shadow: 4px 5px 0 rgb(69 44 26 / 28%);
+  backdrop-filter: none;
+}
+
+.selectionFooter > span {
+  color: #67482c;
+}
+
+.startButton {
+  border: 2px solid #694326;
+  border-radius: 4px;
+  color: #3c291a;
+  background: linear-gradient(180deg, #f0c77e, #d89c50);
+  box-shadow: inset 0 2px 0 rgb(255 239 193 / 72%), 0 4px 0 #80512d;
+}
+
+.startButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: none;
+  background: linear-gradient(180deg, #f7d58d, #e4a957);
+  box-shadow: inset 0 2px 0 rgb(255 239 193 / 78%), 0 5px 0 #80512d;
+}
+
+.startButton:disabled {
+  border-color: #a8875e;
+  color: #927d61;
+  background: #d8c6a5;
+}
