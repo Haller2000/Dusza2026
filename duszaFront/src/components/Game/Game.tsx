@@ -11,18 +11,27 @@ interface GameProps {
 const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const [scripts, setScripts] = useState([{ id: 1, name: 'Script 1', code: '' }]);
 	const [activeScriptId, setActiveScriptId] = useState<number | null>(null);
+	const [isRenamingScript, setIsRenamingScript] = useState(false);
+	const [scriptNameDraft, setScriptNameDraft] = useState('');
 	const activeScript = scripts.find(script => script.id === activeScriptId);
 
 	const addScript = () => {
 		const id = Math.max(...scripts.map(script => script.id)) + 1;
 		setScripts(current => [...current, { id, name: `Script ${id}`, code: '' }]);
 		setActiveScriptId(null);
+		setIsRenamingScript(false);
 	};
 
 	const updateScriptName = (id: number, name: string) => {
 		setScripts(current => current.map(script =>
 			script.id === id ? { ...script, name } : script
 		));
+	};
+
+	const saveScriptName = () => {
+		if (!activeScript) return;
+		updateScriptName(activeScript.id, scriptNameDraft.trim() || `Script ${activeScript.id}`);
+		setIsRenamingScript(false);
 	};
 
 	const removeActiveScript = () => {
@@ -67,11 +76,44 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 					{activeScript ? (
 						<div className={styles.scriptEditorPanel}>
 							<div className={styles.editorToolbar}>
-								<label htmlFor="script-editor">{activeScript.name}</label>
+								{isRenamingScript ? (
+									<form
+										className={styles.scriptNameForm}
+										onSubmit={event => {
+											event.preventDefault();
+											saveScriptName();
+										}}
+									>
+										<label htmlFor="script-name-edit">Script neve</label>
+										<input
+											id="script-name-edit"
+											className={styles.scriptNameInput}
+											value={scriptNameDraft}
+											maxLength={40}
+											autoFocus
+											onChange={event => setScriptNameDraft(event.target.value)}
+										/>
+										<button type="submit" className={styles.saveNameButton}>Név mentése</button>
+										<button type="button" onClick={() => setIsRenamingScript(false)} className={styles.backToScriptsButton}>
+											Mégse
+										</button>
+									</form>
+								) : (
+									<strong className={styles.activeScriptName}>{activeScript.name}</strong>
+								)}
 								<div className={styles.editorActions}>
-									<button type="button" onClick={() => setActiveScriptId(null)} className={styles.backToScriptsButton}>
+									<button type="button" onClick={() => { setActiveScriptId(null); setIsRenamingScript(false); }} className={styles.backToScriptsButton}>
 										← Vissza a scriptekhez
 									</button>
+									{!isRenamingScript && (
+										<button
+											type="button"
+											onClick={() => { setScriptNameDraft(activeScript.name); setIsRenamingScript(true); }}
+											className={styles.backToScriptsButton}
+										>
+											Név módosítása
+										</button>
+									)}
 									{scripts.length > 1 && (
 										<button type="button" onClick={removeActiveScript} className={styles.removeButton}>
 											Script törlése
@@ -93,19 +135,7 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 						<div className={styles.scriptList} aria-label="Script kiválasztása">
 							{scripts.map(script => (
 								<article key={script.id} className={styles.scriptCard}>
-									<label className={styles.scriptNameLabel} htmlFor={`script-name-${script.id}`}>
-										Script neve
-									</label>
-									<input
-										id={`script-name-${script.id}`}
-										className={styles.scriptNameInput}
-										value={script.name}
-										maxLength={40}
-										onChange={event => updateScriptName(script.id, event.target.value)}
-										onBlur={() => {
-											if (!script.name.trim()) updateScriptName(script.id, `Script ${script.id}`);
-										}}
-									/>
+									<strong className={styles.scriptCardName}>{script.name}</strong>
 									<button
 										type="button"
 										onClick={() => setActiveScriptId(script.id)}
