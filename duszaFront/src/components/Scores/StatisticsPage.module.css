@@ -222,6 +222,94 @@
   font-size: 16px;
 }
 
+.timelapse {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 16px 0 4px;
+}
+
+.timelapseGrid {
+  display: grid;
+  width: min(100%, 440px);
+  gap: 3px;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 3px solid #6f482b;
+  border-radius: 5px;
+  background: #332321;
+}
+
+.timelapseTile {
+  display: block;
+  min-width: 0;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid #7d6948;
+  border-radius: 3px;
+  background: #e4edcc;
+}
+
+.timelapseRobot {
+  border-color: #557a45;
+  box-shadow: 0 0 0 2px #557a45;
+}
+
+.timelapseTileIcon {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.timelapseStats,
+.timelapseControls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.timelapseStats {
+  color: #765a3c;
+  font-size: 12px;
+}
+
+.timelapseControls {
+  width: min(100%, 440px);
+}
+
+.timelapseControls input[type='range'] {
+  min-width: 100px;
+  flex: 1;
+  accent-color: #557a45;
+}
+
+.timelapseButton {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 2px solid #7d5030;
+  border-radius: 4px;
+  color: #624326;
+  background: #efd7a9;
+  box-shadow: 0 2px 0 #9c7043;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.timelapseButton:focus-visible,
+.timelapseControls input:focus-visible {
+  outline: 2px solid var(--grass);
+  outline-offset: 3px;
+}
+
+.timelapseEmpty {
+  margin: 14px 0 4px;
+  color: #765a3c;
+  font-size: 13px;
+}
+
 .emptyState,
 .statusMessage,
 .errorMessage {

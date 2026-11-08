@@ -265,6 +265,7 @@ def user_statistics(request):
                 'points': score.points,
                 'gold_count': score.gold_count,
                 'step_count': score.step_count,
+                'steps': score.steps,
                 'created_at': score.created_at,
             }
             for score in recent_games
