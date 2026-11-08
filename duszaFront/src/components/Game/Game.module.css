@@ -58,7 +58,10 @@
 }
 
 .scriptsPanel {
-  overflow: hidden;
+  overflow: visible;
+  box-sizing: border-box;
+  min-height: min-content;
+  padding: 16px;
 }
 
 .panelHeading {
@@ -78,6 +81,16 @@
 .panelHeading > span {
   color: #a4afd3;
   font-size: 13px;
+}
+
+.scriptActions {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 320px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .scriptFeedback,
@@ -237,16 +250,19 @@
 .editorToolbar {
   display: flex;
   min-height: 42px;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
-  padding: 0 14px;
+  padding: 8px 0;
   color: #a4afd3;
   font-size: 12px;
 }
 
 .editorActions {
   display: flex;
+  min-width: 0;
+  margin-left: auto;
   align-items: center;
   justify-content: flex-end;
   flex-wrap: wrap;
@@ -338,7 +354,7 @@
   height: 100%;
   box-sizing: border-box;
   margin: 0;
-  padding: 16px;
+  padding: 20px;
   border: 0;
   font-family: var(--mono);
   font-size: 14px;
@@ -433,7 +449,13 @@
   }
 
   .scriptsPanel {
-    min-height: 0;
+    min-height: min-content;
+    padding: 12px;
+  }
+
+  .scriptActions {
+    flex-basis: 100%;
+    justify-content: flex-start;
   }
 
   .board {
@@ -444,4 +466,406 @@
   .scriptEditorFrame {
     min-height: 300px;
   }
+}
+
+.gamePage {
+  color: var(--world-ink);
+}
+
+.backButton {
+  border: 2px solid #7d5030;
+  border-radius: 4px;
+  color: #624326;
+  background: #efd7a9;
+  box-shadow: 0 3px 0 #9c7043;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+}
+
+.backButton:hover {
+  transform: translateY(-2px);
+  border-color: #593923;
+  background: #f8e7c2;
+  box-shadow: 0 4px 0 #80512d;
+}
+
+.backButton:focus-visible,
+.addButton:focus-visible,
+.removeButton:focus-visible,
+.backToScriptsButton:focus-visible,
+.saveNameButton:focus-visible {
+  outline: 2px solid var(--grass);
+  outline-offset: 3px;
+}
+
+.gameHeader {
+  padding-bottom: 18px;
+  border-bottom: 1px solid #c9a878;
+}
+
+.gameEyebrow {
+  color: #82603a;
+}
+
+.gameHeader h1 {
+  color: #674127;
+  text-shadow: 1px 2px 0 #e1c18b;
+}
+
+.mapPanel,
+.scriptsPanel {
+  border: 5px solid #6f482b;
+  border-radius: 6px;
+  color: #55391f;
+  background:
+    radial-gradient(circle, rgb(145 101 57 / 7%) 1px, transparent 1.5px),
+    linear-gradient(180deg, #fff1d2, #f3dfb8);
+  background-size: 11px 11px, 100% 100%;
+  box-shadow: 4px 6px 0 rgb(69 44 26 / 20%);
+}
+
+.panelHeading {
+  border-bottom: 1px solid #c9a878;
+  padding-bottom: 8px;
+}
+
+.panelHeading h2 {
+  color: #54351f;
+}
+
+.panelHeading > span,
+.editorToolbar {
+  color: #765a3c;
+}
+
+.scriptFeedback,
+.scriptFeedbackError {
+  border-top-color: #c9a878;
+}
+
+.scriptFeedback {
+  color: #38512e;
+  background: #e4edcc;
+}
+
+.scriptFeedbackError {
+  color: #7a3025;
+  background: #f5d6bd;
+}
+
+.addButton,
+.backToScriptsButton,
+.saveNameButton {
+  border: 2px solid #7d5030;
+  border-radius: 4px;
+  color: #624326;
+  background: #efd7a9;
+  box-shadow: 0 2px 0 #9c7043;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+}
+
+.addButton:hover:not(:disabled),
+.backToScriptsButton:hover,
+.saveNameButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #593923;
+  background: #f8e7c2;
+  box-shadow: 0 3px 0 #80512d;
+}
+
+.saveNameButton {
+  border-color: #694326;
+  color: #3c291a;
+  background: linear-gradient(180deg, #f0c77e, #d89c50);
+}
+
+.saveNameButton:hover:not(:disabled) {
+  background: linear-gradient(180deg, #f7d58d, #e4a957);
+}
+
+.removeButton {
+  border: 2px solid #9c513d;
+  border-radius: 4px;
+  color: #7a3025;
+  background: #f5d6bd;
+  box-shadow: 0 2px 0 #b66f55;
+}
+
+.scriptList {
+  border-bottom-color: #c9a878;
+}
+
+.scriptCard {
+  border: 3px solid #b88a55;
+  border-radius: 4px;
+  background:
+    radial-gradient(circle, rgb(145 101 57 / 6%) 1px, transparent 1.5px),
+    linear-gradient(180deg, #fff4d9, #f1d9ab);
+  background-size: 11px 11px, 100% 100%;
+  box-shadow: 2px 3px 0 rgb(69 44 26 / 16%);
+}
+
+.scriptCard:focus-within {
+  border-color: #557a45;
+  box-shadow: 0 0 0 2px rgb(85 122 69 / 20%), 2px 4px 0 rgb(69 44 26 / 18%);
+}
+
+.scriptCardName,
+.activeScriptName {
+  color: #54351f;
+}
+
+.scriptCardOpen {
+  display: grid;
+  width: 100%;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.scriptCardOpen:hover .scriptCardHint {
+  color: #38512e;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.scriptCardOpen:focus-visible {
+  outline: 2px solid var(--grass);
+  outline-offset: 3px;
+}
+
+.scriptSummary {
+  color: #765a3c;
+}
+
+.scriptCardHint {
+  color: #557a45;
+}
+
+.scriptNameInput {
+  border: 2px solid #a87b4b;
+  border-radius: 3px;
+  color: #452f1f;
+  background: #fff5dd;
+}
+
+.scriptNameInput:focus-visible {
+  outline-color: var(--grass);
+}
+
+.editorActions .backToScriptsButton {
+  color: #624326;
+}
+
+.board {
+  border: 5px solid #2a1d1b;
+  border-radius: 8px;
+  background:
+    repeating-linear-gradient(0deg, rgb(195 131 75 / 10%) 0 3px, transparent 3px 12px),
+    linear-gradient(145deg, #4a3028, #211919 42%, #503226);
+  box-shadow: 0 0 0 2px #6b472b, 0 0 0 5px #302019, 5px 7px 0 rgb(55 36 23 / 25%);
+}
+
+.fogGrid {
+  border: 3px solid #2a1d1b;
+  border-radius: 6px;
+  background: #332321;
+}
+
+.fogTile {
+  border-color: #7d6948;
+  background: #e4edcc;
+}
+
+.robotTile {
+  border-color: #557a45;
+}
+
+.litTile {
+  border-color: #d89c50;
+  box-shadow: 0 0 0 2px #d89c50, 0 0 14px 4px rgb(216 156 80 / 62%);
+}
+
+.scriptEditorFrame {
+  border: 2px solid #b88a55;
+  border-radius: 4px;
+  background:
+    radial-gradient(circle, rgb(145 101 57 / 5%) 1px, transparent 1.5px),
+    #fff4d9;
+  background-size: 11px 11px, 100% 100%;
+}
+
+.scriptHighlight {
+  color: #452f1f;
+}
+
+.scriptEditor {
+  caret-color: #452f1f;
+}
+
+.scriptEditor::selection {
+  background: rgb(85 122 69 / 25%);
+}
+
+.scriptEditor:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--grass);
+}
+
+.scriptEditor::placeholder {
+  color: #ae9877;
+  -webkit-text-fill-color: #ae9877;
+}
+
+.invalidCode {
+  background: rgb(156 81 61 / 14%);
+  text-decoration-color: #9c513d;
+}
+
+.scriptDiagnostics {
+  border-top-color: #c99d78;
+  color: #7a3025;
+  background: #f5d6bd;
+}
+
+.scriptValid {
+  border-top-color: #b5c293;
+  color: #38512e;
+  background: #e4edcc;
+}
+
+.runtimeToolbar {
+  display: grid;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid #c9a878;
+  color: #765a3c;
+  font-size: 12px;
+}
+
+.runtimeActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.runButton,
+.controlButton {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 2px solid #7d5030;
+  border-radius: 4px;
+  color: #624326;
+  background: #efd7a9;
+  box-shadow: 0 2px 0 #9c7043;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+}
+
+.runButton {
+  border-color: #38512e;
+  color: #fff3d4;
+  background: linear-gradient(180deg, #78985b, #557a45);
+  box-shadow: inset 0 2px 0 rgb(227 239 194 / 42%), 0 3px 0 #38512e;
+}
+
+.runButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: linear-gradient(180deg, #87a967, #63864d);
+  box-shadow: inset 0 2px 0 rgb(227 239 194 / 52%), 0 4px 0 #38512e;
+}
+
+.controlButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #593923;
+  background: #f8e7c2;
+  box-shadow: 0 3px 0 #80512d;
+}
+
+.runButton:disabled,
+.controlButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.runtimeStats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.runtimeStats > div {
+  display: flex;
+  min-height: 54px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 2px solid #b88a55;
+  border-radius: 4px;
+  background: #fff4d9;
+  box-shadow: 0 2px 0 rgb(69 44 26 / 12%);
+}
+
+.runtimeStats span {
+  color: #82603a;
+  font-size: 11px;
+}
+
+.runtimeStats strong {
+  color: #54351f;
+  font-size: 14px;
+}
+
+.runtimeError {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 2px solid #9c513d;
+  border-radius: 4px;
+  color: #7a3025;
+  background: #f5d6bd;
+  font-size: 12px;
+}
+
+.runtimeConsole {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+  color: #67482c;
+  font-size: 12px;
+}
+
+.consoleOutput {
+  max-height: 100px;
+  overflow: auto;
+  padding: 8px 10px;
+  border: 2px solid #b88a55;
+  border-radius: 4px;
+  color: #38512e;
+  background: #fff4d9;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.emptyConsole {
+  color: #876847;
+}
+
+.hiddenTile {
+  border-color: #3a2a1e;
+  background: #574638;
+}
+
+.hiddenTile .fogTileIcon {
+  opacity: 0.12;
+  filter: grayscale(1);
 }

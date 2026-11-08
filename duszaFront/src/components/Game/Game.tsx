@@ -3,6 +3,12 @@ import axios from 'axios';
 import type { SelectableMap } from '../Map/MapSelectionPage';
 import MapTileIcon, { type MapTile } from '../Map/MapTileIcon';
 import { validateMineScript, type MineScriptDiagnostic } from './mineScriptValidator';
+import {
+	createInitialRuntimeFrame,
+	executeMineScript,
+	MineScriptRuntimeError,
+	type RuntimeFrame,
+} from './mineScriptRuntime';
 import styles from './Game.module.css';
 
 interface GameProps {
@@ -19,6 +25,57 @@ interface StoredScript {
 interface EditorScript extends StoredScript {
 	savedId: number | null;
 }
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+const parseImportedScripts = (file: File, text: string, firstId: number): EditorScript[] => {
+	const baseName = file.name.replace(/\.(json|txt|ms|minescript)$/i, '').trim() || 'Importált script';
+	let entries: unknown[];
+	if (/\.json$/i.test(file.name)) {
+		let payload: unknown;
+		try {
+			payload = JSON.parse(text);
+		} catch {
+			throw new Error('A JSON fájl formátuma érvénytelen.');
+		}
+
+		if (Array.isArray(payload)) {
+			entries = payload;
+		} else if (isRecord(payload) && Array.isArray(payload.scripts)) {
+			entries = payload.scripts;
+		} else if (isRecord(payload) && typeof payload.code === 'string') {
+			entries = [payload];
+		} else {
+			throw new Error('A JSON fájlnak scriptet vagy scripts listát kell tartalmaznia.');
+		}
+	} else {
+		if (!text.trim()) throw new Error('Az importált script üres.');
+		return [{ id: firstId, savedId: null, name: baseName, code: text }];
+	}
+
+	if (!entries.length) throw new Error('A fájl nem tartalmaz importálható scripteket.');
+	return entries.map((entry, index) => {
+		if (!isRecord(entry) || typeof entry.code !== 'string') {
+			throw new Error('Minden scriptnek szöveges code mezőt kell tartalmaznia.');
+		}
+		const name = typeof entry.name === 'string' && entry.name.trim()
+			? entry.name.trim()
+			: `${baseName} ${index + 1}`;
+		return { id: firstId + index, savedId: null, name, code: entry.code };
+	});
+};
+
+const downloadFile = (fileName: string, blob: Blob) => {
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement('a');
+	link.href = url;
+	link.download = fileName;
+	document.body.appendChild(link);
+	link.click();
+	link.remove();
+	window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
 
 const getApiErrorMessage = (data: unknown): string | null => {
 	if (typeof data === 'string') return data;
@@ -45,40 +102,41 @@ const getApiErrorMessage = (data: unknown): string | null => {
 	return null;
 };
 
-const renderFoggedMap = (map: SelectableMap) => {
-	const rows = map.map_data.trim().split(/\r?\n/).map(row => [...row]);
-	const robot = rows.flatMap((row, y) => row.map((cell, x) => ({ cell, x, y })))
-		.find(({ cell }) => ['>', '<', '^', 'v'].includes(cell));
-	const direction = robot ? {
+const renderFoggedMap = (map: SelectableMap, frame: RuntimeFrame) => {
+	const direction: Record<RuntimeFrame['facing'], [number, number]> = {
 		'>': [1, 0],
 		'<': [-1, 0],
 		'^': [0, -1],
 		'v': [0, 1],
-	}[robot.cell] : undefined;
-	const frontX = robot && direction ? robot.x + direction[0] : -1;
-	const frontY = robot && direction ? robot.y + direction[1] : -1;
-	const frontInBounds = frontY >= 0 && frontY < rows.length && frontX >= 0 && frontX < (rows[frontY]?.length ?? 0);
+	};
+	const [dx, dy] = direction[frame.facing];
+	const frontX = frame.robotX + dx;
+	const frontY = frame.robotY + dy;
+	const frontInBounds = frontY >= 0 && frontY < frame.mapGrid.length && frontX >= 0 && frontX < (frame.mapGrid[frontY]?.length ?? 0);
+	const explored = new Set(frame.explored);
 
-	return (
+ return (
 		<div
 			className={styles.fogGrid}
 			style={{ gridTemplateColumns: `repeat(${map.width}, minmax(0, 1fr))` }}
 			role="img"
-			aria-label={`${map.name}: a robot és az előtte lévő mező látható`}
+			aria-label={`${map.name}: a robot és a felfedezett mezők láthatók`}
 		>
 			{Array.from({ length: map.height }, (_, y) =>
 				Array.from({ length: map.width }, (_, x) => {
-					const isRobot = robot?.x === x && robot.y === y;
+					const isRobot = frame.robotX === x && frame.robotY === y;
 					const isFront = frontInBounds && frontX === x && frontY === y;
-					const tile = isRobot || isFront ? rows[y]?.[x] ?? '.' : '.';
+					const isExplored = explored.has(`${x},${y}`);
+					const tile = isRobot ? frame.facing : isFront || isExplored ? frame.mapGrid[y]?.[x] ?? '.' : '.';
 					const className = [
 						styles.fogTile,
 						isRobot ? styles.robotTile : '',
 						isFront ? styles.litTile : '',
+						!isRobot && !isFront && !isExplored ? styles.hiddenTile : '',
 					].filter(Boolean).join(' ');
 
-					return (
-						<span key={`${x}-${y}`} className={className}>
+ 					return (
+						<span key={`${y}-${x}`} className={className}>
 							<MapTileIcon cell={tile as MapTile} className={styles.fogTileIcon} />
 						</span>
 					);
@@ -148,10 +206,25 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 		localStorage.getItem('authToken') ? '' : 'A scriptek mentéséhez be kell jelentkezni.'
 	);
 	const [scriptStatus, setScriptStatus] = useState('');
+	const [runtimeFrame, setRuntimeFrame] = useState<RuntimeFrame>(() => createInitialRuntimeFrame(map));
+	const [runtimeError, setRuntimeError] = useState<MineScriptRuntimeError | null>(null);
+	const [isRunning, setIsRunning] = useState(false);
+	const importFileRef = useRef<HTMLInputElement>(null);
 	const scriptEditorRef = useRef<HTMLTextAreaElement>(null);
 	const scriptHighlightRef = useRef<HTMLPreElement>(null);
+	const executionRef = useRef<Generator<RuntimeFrame> | null>(null);
+	const executionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const activeScript = scripts.find(script => script.id === activeScriptId);
 	const diagnostics = activeScript ? validateMineScript(activeScript.code) : [];
+
+	const cancelExecution = () => {
+		if (executionTimerRef.current !== null) window.clearTimeout(executionTimerRef.current);
+		executionTimerRef.current = null;
+		executionRef.current?.return(undefined);
+		executionRef.current = null;
+	};
+
+	useEffect(() => () => cancelExecution(), []);
 
 	useEffect(() => {
 		let isMounted = true;
@@ -282,6 +355,109 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 		));
 	};
 
+	const startExecution = () => {
+		if (!activeScript || diagnostics.length > 0) return;
+		cancelExecution();
+		setScriptError('');
+		setScriptStatus('');
+		setRuntimeError(null);
+		setRuntimeFrame(createInitialRuntimeFrame(map));
+		setIsRunning(true);
+		executionRef.current = executeMineScript(activeScript.code, map);
+
+		const advance = () => {
+			const execution = executionRef.current;
+			if (!execution) return;
+			try {
+				const result = execution.next();
+				if (result.done) {
+					cancelExecution();
+					setIsRunning(false);
+					setScriptStatus('A script futtatása befejeződött.');
+					return;
+				}
+				setRuntimeFrame(result.value);
+				executionTimerRef.current = window.setTimeout(advance, 350);
+			} catch (error: unknown) {
+				cancelExecution();
+				setIsRunning(false);
+				setRuntimeError(error instanceof MineScriptRuntimeError
+					? error
+					: new MineScriptRuntimeError('E_RUNTIME', 0, 'Váratlan futásidejű hiba történt.'));
+			}
+		};
+
+		executionTimerRef.current = window.setTimeout(advance, 0);
+	};
+
+	const stopExecution = () => {
+		if (!isRunning) return;
+		cancelExecution();
+		setIsRunning(false);
+		setScriptStatus('A futtatás leállítva.');
+	};
+
+	const resetExecution = () => {
+		cancelExecution();
+		setIsRunning(false);
+		setRuntimeError(null);
+		setRuntimeFrame(createInitialRuntimeFrame(map));
+		setScriptStatus('');
+	};
+
+	const importScripts = async (event: React.ChangeEvent<HTMLInputElement>) => {
+		const input = event.currentTarget;
+		const file = input.files?.[0];
+		input.value = '';
+		if (!file) return;
+
+		setScriptError('');
+		setScriptStatus('');
+		if (file.size > 1_000_000) {
+			setScriptError('Az import fájl legfeljebb 1 MB lehet.');
+			return;
+		}
+
+		try {
+			const firstId = Math.max(0, ...scripts.map(script => script.id)) + 1;
+			const importedScripts = parseImportedScripts(file, await file.text(), firstId);
+			setScripts(current => [...current, ...importedScripts]);
+			setActiveScriptId(importedScripts[0].id);
+			setIsRenamingScript(false);
+			setScriptStatus(importedScripts.length === 1
+				? `A(z) „${importedScripts[0].name}” új scriptként importálva.`
+				: `${importedScripts.length} új script importálva.`);
+		} catch (error: unknown) {
+			setScriptError(error instanceof Error ? error.message : 'Nem sikerült importálni a scripteket.');
+		}
+	};
+
+	const exportScripts = () => {
+		const bundle = {
+			format: 'dusza-mine-scripts',
+			version: 1,
+			mapName: map.name,
+			scripts: scripts.map(({ name, code }) => ({ name, code })),
+		};
+		downloadFile(
+			'duszabot-scriptek.json',
+			new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' }),
+		);
+		setScriptStatus(`${scripts.length} script exportálva.`);
+		setScriptError('');
+	};
+
+	const exportActiveScript = () => {
+		if (!activeScript) return;
+		const baseName = activeScript.name
+			.replace(/\.txt$/i, '')
+			.replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-')
+			.trim() || 'minescript';
+		downloadFile(`${baseName}.txt`, new Blob([activeScript.code], { type: 'text/plain;charset=utf-8' }));
+		setScriptStatus(`A(z) „${activeScript.name}” TXT fájlként exportálva.`);
+		setScriptError('');
+	};
+
 	return (
 		<main className={styles.gamePage}>
 			<button type="button" onClick={onBack} className={styles.backButton}>
@@ -298,15 +474,67 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 						<span>{map.width} × {map.height}</span>
 					</div>
 					<div className={styles.board}>
-						{renderFoggedMap(map)}
+						{renderFoggedMap(map, runtimeFrame)}
+					</div>
+					<div className={styles.runtimeStats}>
+						<div><span>Arany</span><strong>{runtimeFrame.goldCollected}</strong></div>
+						<div><span>Utasítás</span><strong>{runtimeFrame.instructionCount} / 1000</strong></div>
+						<div><span>Robot</span><strong>{runtimeFrame.robotX + 1}, {runtimeFrame.robotY + 1}</strong></div>
+						<div><span>Irány</span><strong>{runtimeFrame.facing}</strong></div>
+					</div>
+					{runtimeError && (
+						<div className={styles.runtimeError} role="alert">
+							<strong>{runtimeError.code}</strong>
+							<span>{runtimeError.line > 0 ? `${runtimeError.line}. sor: ` : ''}{runtimeError.message}</span>
+						</div>
+					)}
+					<div className={styles.runtimeConsole} aria-live="polite">
+						<strong>Konzol</strong>
+						<div className={styles.consoleOutput}>
+							{runtimeFrame.consoleOutput.length ? runtimeFrame.consoleOutput.map((output, index) => (
+								<div key={`${index}-${output}`}>{output}</div>
+							)) : <span className={styles.emptyConsole}>Nincs kimenet</span>}
+						</div>
 					</div>
 				</section>
 				<section className={styles.scriptsPanel} aria-label="Scriptek">
 					<div className={styles.panelHeading}>
 						<h2>Scriptek</h2>
-						<button type="button" onClick={addScript} className={styles.addButton} title="Új script" disabled={isLoadingScripts}>
-							<span aria-hidden="true">+</span> Új
-						</button>
+						<div className={styles.scriptActions}>
+							<input
+								ref={importFileRef}
+								type="file"
+								accept=".json,.txt,.ms,.minescript,application/json,text/plain"
+								hidden
+								onChange={importScripts}
+							/>
+							<button type="button" onClick={() => importFileRef.current?.click()} className={styles.addButton} disabled={isLoadingScripts}>
+								Importálás
+							</button>
+							<button type="button" onClick={exportActiveScript} className={styles.addButton} disabled={isLoadingScripts || !activeScript} title="Az aktív script mentése .txt fájlba">
+								TXT mentése
+							</button>
+							<button type="button" onClick={exportScripts} className={styles.addButton} disabled={isLoadingScripts || scripts.length === 0}>
+								Összes exportálása (JSON)
+							</button>
+							<button type="button" onClick={addScript} className={styles.addButton} title="Új script" disabled={isLoadingScripts}>
+								<span aria-hidden="true">+</span> Új
+							</button>
+						</div>
+					</div>
+					<div className={styles.runtimeToolbar}>
+						<span>{activeScript ? `Futtatás: ${activeScript.name}` : 'Válassz scriptet a futtatáshoz.'}</span>
+						<div className={styles.runtimeActions}>
+							<button type="button" onClick={startExecution} className={styles.runButton} disabled={!activeScript || diagnostics.length > 0 || isRunning || isLoadingScripts}>
+								Futtatás
+							</button>
+							<button type="button" onClick={stopExecution} className={styles.controlButton} disabled={!isRunning}>
+								Leállítás
+							</button>
+							<button type="button" onClick={resetExecution} className={styles.controlButton}>
+								Alaphelyzet
+							</button>
+						</div>
 					</div>
 					{isLoadingScripts && <div className={styles.scriptFeedback}>Mentett scriptek betöltése...</div>}
 					{scriptError && <div className={styles.scriptFeedbackError} role="alert">{scriptError}</div>}
