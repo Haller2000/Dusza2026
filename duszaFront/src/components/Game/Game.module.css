@@ -300,10 +300,11 @@
 
 .fogGrid {
   display: grid;
-  width: min(100%, 560px);
+  width: max-content;
+  max-width: 100%;
   gap: 3px;
   box-sizing: border-box;
-  padding: 2%;
+  padding: 10px;
   border: 2px solid #c9b98f;
   border-radius: 10px;
   background: #161a1c;
@@ -407,6 +408,11 @@
 
 .invalidCodeLine {
   background: rgb(211 74 74 / 5%);
+}
+
+.runningCodeLine {
+  background: rgb(85 122 69 / 20%);
+  box-shadow: inset 3px 0 #557a45;
 }
 
 .scriptDiagnostics,

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import type { SelectableMap } from '../Map/MapSelectionPage';
 import MapTileIcon, { type MapTile } from '../Map/MapTileIcon';
@@ -102,7 +102,7 @@ const getApiErrorMessage = (data: unknown): string | null => {
 	return null;
 };
 
-const renderFoggedMap = (map: SelectableMap, frame: RuntimeFrame) => {
+const renderFoggedMap = (map: SelectableMap, frame: RuntimeFrame, cellSize: number) => {
 	const direction: Record<RuntimeFrame['facing'], [number, number]> = {
 		'>': [1, 0],
 		'<': [-1, 0],
@@ -118,7 +118,10 @@ const renderFoggedMap = (map: SelectableMap, frame: RuntimeFrame) => {
  return (
 		<div
 			className={styles.fogGrid}
-			style={{ gridTemplateColumns: `repeat(${map.width}, minmax(0, 1fr))` }}
+			style={{
+				gridTemplateColumns: `repeat(${map.width}, ${cellSize}px)`,
+				gridTemplateRows: `repeat(${map.height}, ${cellSize}px)`,
+			}}
 			role="img"
 			aria-label={`${map.name}: a robot és a felfedezett mezők láthatók`}
 		>
@@ -146,11 +149,15 @@ const renderFoggedMap = (map: SelectableMap, frame: RuntimeFrame) => {
 	);
 };
 
-const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]) => {
+const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[], currentLine: number) => {
 	let lineStart = 0;
 	return code.split('\n').map((line, lineIndex) => {
 		const lineEnd = lineStart + line.length;
 		const lineDiagnostics = diagnostics.filter(diagnostic => diagnostic.line === lineIndex + 1);
+		const lineClassName = [
+			lineDiagnostics.length ? styles.invalidCodeLine : '',
+			lineIndex + 1 === currentLine ? styles.runningCodeLine : '',
+		].filter(Boolean).join(' ') || undefined;
 		const ranges = lineDiagnostics
 			.filter(diagnostic => diagnostic.start < lineEnd && diagnostic.end > lineStart)
 			.map(diagnostic => ({
@@ -161,7 +168,7 @@ const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]
 
 		if (!line.length) {
 			return (
-				<span key={lineIndex} className={lineDiagnostics.length ? styles.invalidCodeLine : undefined}>
+				<span key={lineIndex} className={lineClassName}>
 					{lineDiagnostics.length ? <span className={styles.invalidCode}>{'\u00a0'}</span> : '\u00a0'}
 				</span>
 			);
@@ -183,7 +190,7 @@ const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]
 		if (cursor < line.length) segments.push(line.slice(cursor));
 
 		return (
-			<span key={lineIndex} className={lineDiagnostics.length ? styles.invalidCodeLine : undefined}>
+			<span key={lineIndex} className={lineClassName}>
 				{segments}
 			</span>
 		);
@@ -209,13 +216,20 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const [runtimeFrame, setRuntimeFrame] = useState<RuntimeFrame>(() => createInitialRuntimeFrame(map));
 	const [runtimeError, setRuntimeError] = useState<MineScriptRuntimeError | null>(null);
 	const [isRunning, setIsRunning] = useState(false);
+	const [boardSize, setBoardSize] = useState({ width: 0, height: 0 });
 	const importFileRef = useRef<HTMLInputElement>(null);
+	const boardRef = useRef<HTMLDivElement>(null);
 	const scriptEditorRef = useRef<HTMLTextAreaElement>(null);
 	const scriptHighlightRef = useRef<HTMLPreElement>(null);
 	const executionRef = useRef<Generator<RuntimeFrame> | null>(null);
 	const executionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const activeScript = scripts.find(script => script.id === activeScriptId);
 	const diagnostics = activeScript ? validateMineScript(activeScript.code) : [];
+	const cellSize = Math.max(1, Math.floor(Math.min(
+		(boardSize.width - 26 - (map.width - 1) * 3) / map.width,
+		(boardSize.height - 26 - (map.height - 1) * 3) / map.height,
+		(560 - 26 - (map.width - 1) * 3) / map.width,
+	)));
 
 	const cancelExecution = () => {
 		if (executionTimerRef.current !== null) window.clearTimeout(executionTimerRef.current);
@@ -225,6 +239,48 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	};
 
 	useEffect(() => () => cancelExecution(), []);
+
+	useLayoutEffect(() => {
+		const board = boardRef.current;
+		if (!board) return;
+		const updateSize = (width: number, height: number) => {
+			setBoardSize(current => current.width === width && current.height === height
+				? current
+				: { width, height }
+			);
+		};
+		const style = window.getComputedStyle(board);
+		updateSize(
+			board.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+			board.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom),
+		);
+
+		const resizeObserver = new ResizeObserver(([entry]) => {
+			const { width, height } = entry.contentRect;
+			updateSize(width, height);
+		});
+		resizeObserver.observe(board);
+		return () => resizeObserver.disconnect();
+	}, []);
+
+	useEffect(() => {
+		if (!isRunning || runtimeFrame.currentLine <= 0) return;
+		const editor = scriptEditorRef.current;
+		if (!editor) return;
+
+		const lineHeight = Number.parseFloat(window.getComputedStyle(editor).lineHeight);
+		if (!Number.isFinite(lineHeight)) return;
+		const padding = 20;
+		const lineTop = padding + (runtimeFrame.currentLine - 1) * lineHeight;
+		const visibleTop = editor.scrollTop + padding;
+		const visibleBottom = editor.scrollTop + editor.clientHeight - padding;
+		if (lineTop < visibleTop || lineTop + lineHeight > visibleBottom) {
+			editor.scrollTop = Math.max(0, lineTop - padding - lineHeight * 2);
+			if (scriptHighlightRef.current) {
+				scriptHighlightRef.current.scrollTop = editor.scrollTop;
+			}
+		}
+	}, [isRunning, runtimeFrame.currentLine]);
 
 	useEffect(() => {
 		let isMounted = true;
@@ -473,8 +529,8 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 						<h2>Pálya</h2>
 						<span>{map.width} × {map.height}</span>
 					</div>
-					<div className={styles.board}>
-						{renderFoggedMap(map, runtimeFrame)}
+					<div className={styles.board} ref={boardRef}>
+						{renderFoggedMap(map, runtimeFrame, cellSize)}
 					</div>
 					<div className={styles.runtimeStats}>
 						<div><span>Arany</span><strong>{runtimeFrame.goldCollected}</strong></div>
@@ -594,7 +650,7 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 							</div>
 							<div className={styles.scriptEditorFrame}>
 								<pre ref={scriptHighlightRef} className={styles.scriptHighlight} aria-hidden="true">
-									{renderScriptHighlight(activeScript.code, diagnostics)}
+									{renderScriptHighlight(activeScript.code, diagnostics, isRunning ? runtimeFrame.currentLine : runtimeError?.line ?? 0)}
 								</pre>
 								<textarea
 									ref={scriptEditorRef}
