@@ -75,6 +75,24 @@
   font-size: 17px;
 }
 
+.scriptsHeading {
+  display: grid;
+  gap: 3px;
+}
+
+.saveStatus,
+.saveError {
+  font-size: 11px;
+}
+
+.saveStatus {
+  color: #8ab99f;
+}
+
+.saveError {
+  color: #ffc0c0;
+}
+
 .panelHeading > span {
   color: #a4afd3;
   font-size: 13px;

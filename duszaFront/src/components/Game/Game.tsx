@@ -61,6 +61,40 @@ const renderFoggedMap = (map: SelectableMap, frame: RuntimeFrame) => {
 
 type RobotDirection = RuntimeFrame['facing'];
 
+interface GameScript {
+	id: number;
+	name: string;
+	code: string;
+}
+
+const emptyScript: GameScript = { id: 1, name: 'Script 1', code: '' };
+
+const getScriptsStorageKey = (map: SelectableMap) => {
+	const username = localStorage.getItem('username') || 'guest';
+	return `dusza2026:scripts:${encodeURIComponent(username)}:${map.id}`;
+};
+
+const loadScripts = (storageKey: string): GameScript[] => {
+	try {
+		const storedScripts: unknown = JSON.parse(localStorage.getItem(storageKey) || 'null');
+		if (
+			Array.isArray(storedScripts) &&
+			storedScripts.length > 0 &&
+			storedScripts.every(script =>
+				script &&
+				typeof script.id === 'number' &&
+				typeof script.name === 'string' &&
+				typeof script.code === 'string'
+			)
+		) {
+			return storedScripts;
+		}
+	} catch {
+		return [emptyScript];
+	}
+	return [emptyScript];
+};
+
 const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[], currentLine: number) => {
 	let lineStart = 0;
 	return code.split('\n').map((line, lineIndex) => {
@@ -106,7 +140,9 @@ const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]
 };
 
 const Game: React.FC<GameProps> = ({ map, onBack }) => {
-	const [scripts, setScripts] = useState([{ id: 1, name: 'Script 1', code: '' }]);
+	const storageKey = getScriptsStorageKey(map);
+	const [scripts, setScripts] = useState<GameScript[]>(() => loadScripts(storageKey));
+	const [saveStatus, setSaveStatus] = useState('Mentés folyamatban...');
 	const [activeScriptId, setActiveScriptId] = useState<number | null>(null);
 	const [isRenamingScript, setIsRenamingScript] = useState(false);
 	const [scriptNameDraft, setScriptNameDraft] = useState('');
@@ -119,6 +155,15 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const executionRef = useRef<Generator<RuntimeFrame> | null>(null);
 	const activeScript = scripts.find(script => script.id === activeScriptId);
 	const diagnostics = activeScript ? validateMineScript(activeScript.code) : [];
+
+	useEffect(() => {
+		try {
+			localStorage.setItem(storageKey, JSON.stringify(scripts));
+			setSaveStatus('Automatikusan mentve');
+		} catch {
+			setSaveStatus('Nem sikerült menteni');
+		}
+	}, [scripts, storageKey]);
 
 	useEffect(() => () => {
 		if (timerRef.current !== null) window.clearTimeout(timerRef.current);
@@ -242,7 +287,10 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 				</section>
 				<section className={styles.scriptsPanel} aria-label="Scriptek">
 					<div className={styles.panelHeading}>
-						<h2>Scriptek</h2>
+						<div className={styles.scriptsHeading}>
+							<h2>Scriptek</h2>
+							<span className={saveStatus === 'Nem sikerült menteni' ? styles.saveError : styles.saveStatus} role="status">{saveStatus}</span>
+						</div>
 						<button type="button" onClick={addScript} className={styles.addButton} title="Új script">
 							<span aria-hidden="true">+</span> Új
 						</button>
