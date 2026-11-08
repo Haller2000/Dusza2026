@@ -29,7 +29,7 @@ type Command =
   | { kind: 'set'; name: Token; expression: Expression; line: number }
   | { kind: 'print' | 'step' | 'turn'; value: Token; line: number }
   | { kind: 'mine'; line: number }
-  | { kind: 'if' | 'while'; condition: Token; body: Command[]; elseBody: Command[] | null; line: number };
+  | { kind: 'if' | 'while'; condition: Expression; body: Command[]; elseBody: Command[] | null; line: number };
 
 type ValueType = 'int' | 'bool';
 
@@ -231,8 +231,8 @@ export const validateMineScript = (source: string): MineScriptDiagnostic[] => {
         if (args[0]?.value !== 'here' && args[0]) report(args[0], 'A mine utasítás alakja: mine here.');
         if (args.length === 1 && args[0].value === 'here') commands.push({ kind: 'mine', line: line.line });
       } else if (keyword.value === 'if' || keyword.value === 'while') {
-        requireLength(line, 2, keyword.value);
-        const condition = parseSimple(args[0]);
+        const condition = parseExpression(args);
+        if (!args.length) requireLength(line, 2, keyword.value);
         const kind = keyword.value;
         index += 1;
         let body: Command[] = [];
@@ -255,7 +255,7 @@ export const validateMineScript = (source: string): MineScriptDiagnostic[] => {
             elseBody = [];
           }
         }
-        if (condition && args.length === 1) {
+        if (condition) {
           commands.push({ kind, condition, body, elseBody, line: line.line });
         }
         continue;
@@ -335,8 +335,9 @@ export const validateMineScript = (source: string): MineScriptDiagnostic[] => {
           report(command.value, `${command.kind === 'step' ? 'A step' : 'A turn'} paraméterének egész számnak kell lennie.`);
         }
       } else if (command.kind === 'if' || command.kind === 'while') {
-        const conditionType = inferSimple(command.condition, variables);
-        if (conditionType && conditionType !== 'bool') report(command.condition, 'Az if/while feltételének logikai értéknek kell lennie.');
+        const conditionType = inferExpression(command.condition, variables);
+        const conditionToken = command.condition.kind === 'binary' ? command.condition.operator : command.condition.value;
+        if (conditionType && conditionType !== 'bool') report(conditionToken, 'Az if/while feltételének logikai értéknek kell lennie.');
         if (command.kind === 'while') {
           analyze(command.body, variables);
         } else {

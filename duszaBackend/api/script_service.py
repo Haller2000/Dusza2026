@@ -121,9 +121,9 @@ class Interpreter:
             if op == '>': return left_val > right_val, "bool"
             if op == '>=': return left_val >= right_val, "bool"
 
-        if op in ('=', '<>'):
-            if op == '=': return left_val == right_val, "bool"
-            if op == '<>': return left_val != right_val, "bool"
+        if op in ('=', '==', '<>', '!='):
+            if op in ('=', '=='): return left_val == right_val, "bool"
+            if op in ('<>', '!='): return left_val != right_val, "bool"
 
         if op in ('and', 'or'):
             if op == 'and': return left_val and right_val, "bool"
