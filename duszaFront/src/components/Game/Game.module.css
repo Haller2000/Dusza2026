@@ -105,33 +105,70 @@
   background: #352124;
 }
 
-.scriptTabs {
-  display: flex;
-  min-height: 44px;
-  gap: 4px;
-  overflow-x: auto;
-  padding: 8px 12px 0;
+.scriptList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  gap: 10px;
+  padding: 14px 0;
   border-bottom: 1px solid #293241;
-  scrollbar-width: thin;
 }
 
-.scriptTab {
-  flex: 0 0 auto;
-  padding: 0 12px;
-  border: 1px solid transparent;
-  border-bottom: 0;
-  border-radius: 6px 6px 0 0;
-  color: #a4afd3;
-  background: transparent;
+.scriptCard {
+  display: grid;
+  min-width: 0;
+  min-height: 112px;
+  align-content: start;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #293241;
+  border-radius: 7px;
+  color: #f3f5ff;
+  background: linear-gradient(160deg, #171d28, #10141b);
   cursor: pointer;
   font: inherit;
-  font-size: 13px;
+  text-align: left;
+  transition: border-color 160ms ease, transform 180ms ease, box-shadow 180ms ease;
 }
 
-.activeScriptTab {
-  border-color: #293241;
-  color: #f4f5fb;
-  background: #171d28;
+.scriptCard:hover {
+  transform: translateY(-2px);
+  border-color: #7885a8;
+  box-shadow: 0 10px 20px rgb(0 0 0 / 24%);
+}
+
+.scriptCard:focus-visible {
+  outline: 2px solid #bce7a8;
+  outline-offset: 3px;
+}
+
+.selectedScriptCard {
+  border-color: #91d4a9;
+  box-shadow: 0 0 0 1px rgb(145 212 169 / 32%);
+}
+
+.scriptSummary {
+  display: -webkit-box;
+  overflow: hidden;
+  min-height: 34px;
+  color: #a4afd3;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.scriptCardHint {
+  color: #bce7c7;
+  font-size: 11px;
+}
+
+.scriptEditorPanel {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
 }
 
 .editorToolbar {
@@ -143,6 +180,27 @@
   padding: 0 14px;
   color: #a4afd3;
   font-size: 12px;
+}
+
+.editorActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.backToScriptsButton {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid #356b83;
+  border-radius: 6px;
+  color: #9edff2;
+  background: #172d3a;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .board {
@@ -206,7 +264,7 @@
   }
 
   .scriptsPanel {
-    min-height: 460px;
+    min-height: 0;
   }
 
   .board {
@@ -215,6 +273,6 @@
   }
 
   .scriptEditor {
-    min-height: 340px;
+    min-height: 300px;
   }
 }

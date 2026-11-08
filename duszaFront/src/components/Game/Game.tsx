@@ -10,8 +10,8 @@ interface GameProps {
 
 const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const [scripts, setScripts] = useState([{ id: 1, name: 'Script 1', code: '' }]);
-	const [activeScriptId, setActiveScriptId] = useState(1);
-	const activeScript = scripts.find(script => script.id === activeScriptId) ?? scripts[0];
+	const [activeScriptId, setActiveScriptId] = useState<number | null>(null);
+	const activeScript = scripts.find(script => script.id === activeScriptId);
 
 	const addScript = () => {
 		const id = Math.max(...scripts.map(script => script.id)) + 1;
@@ -58,37 +58,50 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 							<span aria-hidden="true">+</span> Új
 						</button>
 					</div>
-					<div className={styles.scriptTabs} role="tablist" aria-label="Script kiválasztása">
-						{scripts.map(script => (
-							<button
-								key={script.id}
-								type="button"
-								role="tab"
-								aria-selected={script.id === activeScriptId}
-								onClick={() => setActiveScriptId(script.id)}
-								className={`${styles.scriptTab} ${script.id === activeScriptId ? styles.activeScriptTab : ''}`}
-							>
-								{script.name}
-							</button>
-						))}
-					</div>
-					<div className={styles.editorToolbar}>
-						<label htmlFor="script-editor">{activeScript.name}</label>
-						{scripts.length > 1 && (
-							<button type="button" onClick={removeActiveScript} className={styles.removeButton}>
-								Script törlése
-							</button>
-						)}
-					</div>
-					<textarea
-						id="script-editor"
-						className={styles.scriptEditor}
-						value={activeScript.code}
-						onChange={event => updateActiveScript(event.target.value)}
-						spellCheck={false}
-						aria-label={`${activeScript.name} kódja`}
-						placeholder={'Írd ide a robot utasításait...\nPéldául: step 1'}
-					/>
+					{activeScript ? (
+						<div className={styles.scriptEditorPanel}>
+							<div className={styles.editorToolbar}>
+								<label htmlFor="script-editor">{activeScript.name}</label>
+								<div className={styles.editorActions}>
+									<button type="button" onClick={() => setActiveScriptId(null)} className={styles.backToScriptsButton}>
+										← Vissza a scriptekhez
+									</button>
+									{scripts.length > 1 && (
+										<button type="button" onClick={removeActiveScript} className={styles.removeButton}>
+											Script törlése
+										</button>
+									)}
+								</div>
+							</div>
+							<textarea
+								id="script-editor"
+								className={styles.scriptEditor}
+								value={activeScript.code}
+								onChange={event => updateActiveScript(event.target.value)}
+								spellCheck={false}
+								aria-label={`${activeScript.name} kódja`}
+								placeholder={'Írd ide a robot utasításait...\nPéldául: step 1'}
+							/>
+						</div>
+					) : (
+						<div className={styles.scriptList} aria-label="Script kiválasztása">
+							{scripts.map(script => (
+								<button
+									key={script.id}
+									type="button"
+									aria-pressed={false}
+									onClick={() => setActiveScriptId(script.id)}
+									className={styles.scriptCard}
+								>
+									<strong>{script.name}</strong>
+									<span className={styles.scriptSummary}>
+										{script.code.trim() || 'Üres script'}
+									</span>
+									<span className={styles.scriptCardHint}>Kattints a szerkesztéshez</span>
+								</button>
+							))}
+						</div>
+					)}
 				</section>
 			</div>
 		</main>
