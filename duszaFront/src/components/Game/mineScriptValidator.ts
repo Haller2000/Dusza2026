@@ -33,7 +33,7 @@ type Command =
 
 type ValueType = 'int' | 'bool';
 
-const binaryOperators = new Set(['+', '-', '*', '=', '<>', '<', '<=', '>', '>=', 'and', 'or']);
+const binaryOperators = new Set(['+', '-', '*', '=', '==', '<>', '!=', '<', '<=', '>', '>=', 'and', 'or']);
 const reservedWords = new Set([
   'and', 'by', 'else', 'false', 'forward', 'here', 'if', 'isthere', 'mine', 'not',
   'or', 'print', 'set', 'step', 'to', 'true', 'turn', 'while',
@@ -312,7 +312,7 @@ export const validateMineScript = (source: string): MineScriptDiagnostic[] => {
     }
 
     if (leftType && rightType && leftType !== rightType) {
-      report(expression.operator, 'Az = és <> operandusainak azonos típusúnak kell lenniük.');
+      report(expression.operator, 'Az egyenlőségvizsgálat operandusainak azonos típusúnak kell lenniük.');
       return undefined;
     }
     return leftType && rightType ? 'bool' : undefined;
