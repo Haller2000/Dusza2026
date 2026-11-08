@@ -27,6 +27,7 @@
 .avatarOption {
   display: grid;
   min-width: 0;
+  box-sizing: border-box;
   aspect-ratio: 1;
   place-items: center;
   padding: 5px;
@@ -35,6 +36,12 @@
   background: #fff1d2;
   cursor: pointer;
   transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.avatarOption svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .avatarOption:hover {
