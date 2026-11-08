@@ -9,8 +9,8 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 
 from .script_service import Interpreter
-from .models import Map, Score, UserProfile
-from .serializers import MapSerializer, ScoreSerializer
+from .models import Map, Score, Script, UserProfile
+from .serializers import MapSerializer, ScoreSerializer, ScriptSerializer
 
 
 class MapPermissions(permissions.BasePermission):
@@ -60,6 +60,35 @@ class ScoreViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class ScriptViewSet(viewsets.ModelViewSet):
+    serializer_class = ScriptSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Script.objects.filter(created_by=self.request.user).order_by('name', 'id')
+
+    def save_script(self, save):
+        try:
+            with transaction.atomic():
+                save()
+        except IntegrityError as error:
+            error_text = str(error)
+            if (
+                'unique_user_script_name' in error_text
+                or 'api_script.created_by_id, api_script.name' in error_text
+            ):
+                raise ValidationError({
+                    'name': ['Már van mentett scripted ugyanezzel a névvel.']
+                }) from error
+            raise
+
+    def perform_create(self, serializer):
+        self.save_script(lambda: serializer.save(created_by=self.request.user))
+
+    def perform_update(self, serializer):
+        self.save_script(serializer.save)
 
 
 @api_view(['GET'])
@@ -253,30 +282,45 @@ def save_ending(request):
     history = request.data.get('history', [])
     script_text = request.data.get('script', '')
     console_output = request.data.get('console', [])
+    script_id = request.data.get('script_id')
 
     if not map_id:
         return Response({"error": "Hiányzó térkép ID."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         map_obj = Map.objects.get(pk=map_id)
+        script = None
+        if script_id:
+            script = Script.objects.filter(pk=script_id, created_by=request.user).first()
+            if script is None:
+                return Response(
+                    {"error": "A megadott script nem található."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
         
-        # Létrehozzuk az eredményt. A modelled save() metódusa kiszámolja a pontot!
         score = Score.objects.create(
             user=request.user,
             map=map_obj,
             gold_count=gold,
             step_count=steps,
-            steps=history,                     # Timelapse lépések
-            script=[script_text],              # A lefuttatott kód
-            map_complete="\n".join(console_output), # A konzol kimenet elmentése (opcionális)
-            map_snapshot={                     # Elmentjük a pálya pillanatnyi állapotát
+            steps=history,
+            script=script,
+            map_complete="\n".join(console_output),
+            map_snapshot={
                 "map_data": map_obj.map_data,
                 "width": map_obj.width,
                 "height": map_obj.height,
             }
         )
+        if script is None and script_text:
+            script = Script.objects.create(
+                name=request.data.get('script_name') or f'Futtatott script {score.id}',
+                code=script_text,
+                created_by=request.user,
+            )
+            score.script = script
+            score.save(update_fields=['script'])
         
-        # Visszaadjuk a kiszámolt pontot a frontendnek
         return Response({
             "status": "success",
             "message": "Eredmény sikeresen elmentve!",

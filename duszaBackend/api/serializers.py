@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Map, Score
+from .models import Map, Score, Script
 from django.contrib.auth.models import User
 
 class MapSerializer(serializers.ModelSerializer):
@@ -84,3 +84,21 @@ class ScoreSerializer(serializers.ModelSerializer):
             'created_at',
         ]
         read_only_fields = ['user', 'points', 'created_at']
+
+
+class ScriptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Script
+        fields = ['id', 'name', 'code', 'created_by', 'created_at']
+        read_only_fields = ['created_by', 'created_at']
+
+    def validate_name(self, value):
+        user = self.context['request'].user
+        matching_scripts = Script.objects.filter(created_by=user, name=value)
+        if self.instance:
+            matching_scripts = matching_scripts.exclude(pk=self.instance.pk)
+        if matching_scripts.exists():
+            raise serializers.ValidationError(
+                'Már van mentett scripted ugyanezzel a névvel.'
+            )
+        return value

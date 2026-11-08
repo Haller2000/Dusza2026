@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     MapViewSet,
     ScoreViewSet,
+    ScriptViewSet,
     change_password,
     leaderboard,
     login_user,
@@ -15,6 +16,7 @@ from .views import (
 router = DefaultRouter()
 router.register(r'maps', MapViewSet, basename='map')
 router.register(r'scores', ScoreViewSet)
+router.register(r'scripts', ScriptViewSet, basename='script')
 
 urlpatterns = [
     path('', include(router.urls)),
