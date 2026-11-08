@@ -32,6 +32,10 @@
   z-index: 1;
 }
 
+.homePage > nav {
+  z-index: 2;
+}
+
 .profileError {
   margin-bottom: 16px;
   padding: 10px 12px;
