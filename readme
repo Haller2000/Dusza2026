@@ -1,0 +1,38 @@
+# Kincskereső Robot – alkalmazásbemutató
+
+## Az alkalmazás célja
+
+A Kincskereső Robot egy böngészőben használható programozási játék. A játékos MineScript nyelven utasításokat ír a robotnak, majd a program futtatásával megpróbálja bejárni a kiválasztott bányát és aranyat gyűjteni. Az alkalmazásban pályákat lehet kiválasztani és szerkeszteni, a robot mozgása pedig futás közben követhető.
+
+## A funkciók elérése és használata
+
+A játék funkciói bejelentkezés után érhetők el. Új fiók a regisztrációs felületen hozható létre; regisztrációkor profilkép is választható.
+
+- **Játék indítása:** a főoldal „Játék indítása” gombjával nyílik meg a pályaválasztó. Továbbhaladni csak egy pálya kiválasztása után lehet. A játékfelületen MineScript program szerkeszthető, ellenőrizhető és futtatható. A robot mozgása, a felfedezett terület, az összegyűjtött arany, az utasítások száma és a konzolkimenet is megjelenik. A futás leállítható vagy alaphelyzetbe állítható.
+- **Pályaszerkesztő:** a főoldal „Pályaszerkesztő” gombjával érhető el. A pálya mérete 1 és 15 közötti értékekre állítható; üres mező, fal, arany és robot helyezhető el rajta. A pályák szöveges fájlból importálhatók és fájlba exportálhatók, továbbá az adatbázisban tárolt pályák is betölthetők. A mentés ellenőrzi a pálya méretét, valamint azt, hogy legyen rajta pontosan egy robot és legalább egy arany. A felhasználó saját pályáit frissítheti, vagy új néven is elmentheti.
+- **Ranglista:** a főoldal „Ranglista” gombjával nyitható meg. A rangsor játékosonként a legjobb eredményt mutatja; sablonpálya kiválasztásával az adott pálya eredményei is megtekinthetők.
+- **Fiókmenü:** innen érhető el a profil, a statisztika és a saját pályák oldala. A profilban az avatár módosítható és a jelszó megváltoztatható. A statisztika a mentett eredmények összesítését és a korábbi játékok pályájának előnézetét jeleníti meg. A saját pályák oldalon a mentett térképek kinézete is megtekinthető.
+
+A MineScript programok szerkesztés közben automatikusan mentődnek a böngésző helyi tárhelyére, felhasználónként és pályánként elkülönítve. A programot futtatás előtt szintaktikai ellenőrző vizsgálja; a hibákat és a hibás kódrészeket jelzi. A futtató a robot műveleteit lépésenként jeleníti meg, és a futásidejű hibáknál hibakódot és sorszámot mutat.
+
+## A versenyfeladaton túli szolgáltatások
+
+A kötelező játékfunkciókon túl az alkalmazás felhasználói profilokat, avatárválasztást és jelszómódosítást is kínál. A saját pályák adatbázisban tárolhatók, egyedi névvel menthetők, frissíthetők, és a közös sablonpályák mellett is elérhetők. Készült játékosstatisztika, pálya-előnézet és sablonpályánként szűrhető ranglista is. A pályák és a játékfelületek egységes, vizuális megjelenést kaptak.
+
+Az alkalmazás pontszáma az összegyűjtött arany és a lépésszám alapján, **arany ÷ lépések × 100** képlettel készül. Ez a projektben választott pontozás eltér a versenykiírás rangsorolási szabályától, amely először a több aranyat, azonos aranymennyiségnél pedig a kevesebb feldolgozott programsort részesíti előnyben.
+
+## Nem teljesen elkészült vagy kimaradt részek
+
+A MineScript kód szerkeszthető és futtatható, de programfájlból történő importálása és fájlba exportálása még nincs bekötve; a fájlkezelés jelenleg a pályákra vonatkozik. A játékfelületről a futás eredményének adatbázisba mentése sincs bekötve. Emiatt az új futások nem kerülnek automatikusan a statisztikába és a ranglistába, noha a backendben létezik eredménymentő végpont. A programok automatikus mentése a használt böngésző helyi tárhelyén történik, ezért nem szinkronizálódik másik eszközre.
+
+## Fejlesztés közben felmerült problémák és megoldásuk
+
+A saját pályák ismételt, azonos nevű mentése adatbázis-szintű hibát okozott, amely kezdetben nem jelent meg érthetően a felületen. A mentési folyamatot úgy módosítottuk, hogy a felhasználó magyar nyelvű hibaüzenetet kapjon; emellett lehetővé tettük a betöltött pálya frissítését és az új néven történő mentést is.
+
+A pontozási szabály többször változott. A számítást ezért a backend központi modelljéhez igazítottuk, a korábbi eredményeket pedig adatbázis-migrációval újraszámoltuk, hogy a statisztika és a rangsor ugyanazt a képletet használja.
+
+A statisztika betöltésénél fejlesztés közben előfordult, hogy a módosított végpontot még egy korábban elindított fejlesztői szerver szolgálta ki. A szerver újraindítása után az új végpont működött. A pályamentés és az eredménykezelés ellenőrzésére célzott backendtesztek készültek.
+
+## További fejlesztési lehetőségek
+
+Következő lépésként érdemes bekötni a MineScript-fájlok importját és exportját, valamint a játékfutások eredményének automatikus mentését. A rangsort a versenykiírásban szereplő elsődleges rendezéshez – összegyűjtött arany szerint, majd lépésszám szerint – is hozzá lehet igazítani.
