@@ -381,6 +381,22 @@
   text-shadow: 1px 2px 0 #e1c18b;
 }
 
+.backButton {
+  border: 2px solid #7d5030;
+  border-radius: 3px;
+  color: #624326;
+  background: #efd7a9;
+  box-shadow: 0 3px 0 #9c7043;
+}
+
+.backButton:hover {
+  transform: translateY(-2px);
+  border-color: #593923;
+  color: #3e2918;
+  background: #f8e7c2;
+  box-shadow: 0 4px 0 #80512d;
+}
+
 .alertError,
 .alertSuccess {
   border-radius: 4px;
