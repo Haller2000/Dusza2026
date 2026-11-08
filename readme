@@ -15,15 +15,70 @@ A játék funkciói bejelentkezés után érhetők el. Új fiók a regisztráci�
 
 A MineScript programok szerkesztés közben automatikusan mentődnek a böngésző helyi tárhelyére, felhasználónként és pályánként elkülönítve. A programot futtatás előtt szintaktikai ellenőrző vizsgálja; a hibákat és a hibás kódrészeket jelzi. A futtató a robot műveleteit lépésenként jeleníti meg, és a futásidejű hibáknál hibakódot és sorszámot mutat.
 
+## MineScript – a robot programozása
+
+A MineScript utasításai soronként követik egymást. A kulcsszavakat kisbetűvel kell írni; a beépített `isThere` függvény neve pontosan ebben a formában írandó. A változónevek betűvel kezdődnek, és betűket, illetve számjegyeket tartalmazhatnak. A változónevek kis- és nagybetűje számít. Változónévként fenntartott kulcsszó nem használható.
+
+### Szóközök és blokkok
+
+- Egy sorban a szavak között pontosan egy szóköz legyen: például `set alma to 1`. Tabulátor, sorvégi szóköz és üres sor nem használható.
+- A program legfelső szintjén ne legyen behúzás. Az `if` vagy `while` törzsét a következő sor(ok) behúzása jelöli: használj szóközöket, és egy blokkon belül minden utasítást azonos számú szóközzel húzz be. A belső blokk behúzása legyen nagyobb a vezérlőutasításénál.
+- Az `else` az `if` hamis ágát kezdi, ezért az `if`-fel azonos szintre, pontosan ugyanannyi szóközzel kell írni. Az `else` utasítás után következő ág utasításai legyenek behúzva.
+
+```text
+if alma < 3
+    print alma
+else
+    print 0
+```
+
+```text
+while true
+    set alma to 1
+```
+
+### Utasítások
+
+| Alak | Jelentés |
+|---|---|
+| `set név to érték` | Változó létrehozása vagy új érték adása neki. Példa: `set alma to 1`. A változó típusa az első értékadáskor rögzül; egészből később nem lehet logikai érték, vagy fordítva. |
+| `if feltétel` | Ha a logikai feltétel igaz, végrehajtja a behúzott törzset. |
+| `else` | Az előtte álló `if` hamis ágának kezdete; csak közvetlenül hozzá tartozó `if`-hez kapcsolható. |
+| `while feltétel` | Amíg a logikai feltétel igaz, újra végrehajtja a behúzott törzset. |
+| `step forward érték` | Előrelép az értéknek megfelelő mezőszámot. Az érték nem lehet negatív; falnak vagy a pályáról lelépni nem lehet. |
+| `turn by érték` | Balra fordul 90 fokot az érték minden egyes egységére; például `turn by 1` egy negyedfordulat. |
+| `mine here` | Kibányássza a robot aktuális mezőjén lévő aranyat. |
+| `print érték` | A változó vagy literál értékét kiírja a konzolra. |
+
+### Értékek, feltételek és operátorok
+
+Az egész literálok `0` és `100` közöttiek. Logikai literál a `true` és a `false`. A változót az első használata előtt értékül kell adni.
+
+A `set`-tel megadott érték, illetve az `if` és a `while` feltétele lehet egyszerű érték (literál vagy változó), `not` vagy `isThere` kifejezés, vagy kétoperandusú művelet. A művelet egy sorban, zárójelek és műveleti sorrend nélkül írandó; összetett számításhoz használj több `set` sort.
+
+- `not logikai_érték` – logikai tagadás, például `if not alma`.
+- `and` és `or` – logikai ÉS és VAGY. Mindkét operandus logikai érték legyen.
+- `+`, `-`, `*` – összeadás, kivonás és szorzás; egész operandusokkal.
+- `<`, `<=`, `>`, `>=` – egész számok összehasonlítása.
+- `=` vagy `==` – egyenlőség; `<>` vagy `!=` – különbözőség. Az összehasonlított értékek típusa egyezzen.
+- `isThere szám` – a robot előtti mezőről ad logikai értéket: `isThere 0` az üres mezőt, `isThere 1` a falat vagy a pályán kívüli területet, `isThere 2` az aranyat jelzi. A paraméter csak `0`, `1` vagy `2` lehet.
+
+Példa: a robot akkor lép előre egy mezőt, ha előtte üres mező van:
+
+```text
+if isThere 0
+    step forward 1
+```
+
+A futás legfeljebb 1000 feldolgozott utasításig tart; ez a végtelen ciklusok ellen véd.
+
 ## A versenyfeladaton túli szolgáltatások
 
 A kötelező játékfunkciókon túl az alkalmazás felhasználói profilokat, avatárválasztást és jelszómódosítást is kínál. A saját pályák adatbázisban tárolhatók, egyedi névvel menthetők, frissíthetők, és a közös sablonpályák mellett is elérhetők. Készült játékosstatisztika, pálya-előnézet és sablonpályánként szűrhető ranglista is. A pályák és a játékfelületek egységes, vizuális megjelenést kaptak.
 
 Az alkalmazás pontszáma az összegyűjtött arany és a lépésszám alapján, **arany ÷ lépések × 100** képlettel készül. Ez a projektben választott pontozás eltér a versenykiírás rangsorolási szabályától, amely először a több aranyat, azonos aranymennyiségnél pedig a kevesebb feldolgozott programsort részesíti előnyben.
 
-## Nem teljesen elkészült vagy kimaradt részek
 
-A MineScript kód szerkeszthető és futtatható, de programfájlból történő importálása és fájlba exportálása még nincs bekötve; a fájlkezelés jelenleg a pályákra vonatkozik. A játékfelületről a futás eredményének adatbázisba mentése sincs bekötve. Emiatt az új futások nem kerülnek automatikusan a statisztikába és a ranglistába, noha a backendben létezik eredménymentő végpont. A programok automatikus mentése a használt böngésző helyi tárhelyén történik, ezért nem szinkronizálódik másik eszközre.
 
 ## Fejlesztés közben felmerült problémák és megoldásuk
 
