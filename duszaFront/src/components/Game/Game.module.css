@@ -122,28 +122,52 @@
   padding: 12px;
   border: 1px solid #293241;
   border-radius: 7px;
-  color: #f3f5ff;
   background: linear-gradient(160deg, #171d28, #10141b);
-  cursor: pointer;
-  font: inherit;
-  text-align: left;
-  transition: border-color 160ms ease, transform 180ms ease, box-shadow 180ms ease;
+  transition: border-color 160ms ease, box-shadow 180ms ease;
 }
 
-.scriptCard:hover {
-  transform: translateY(-2px);
+.scriptCard:focus-within {
   border-color: #7885a8;
   box-shadow: 0 10px 20px rgb(0 0 0 / 24%);
 }
 
-.scriptCard:focus-visible {
+.scriptCardOpen:focus-visible,
+.scriptNameInput:focus-visible {
   outline: 2px solid #bce7a8;
   outline-offset: 3px;
 }
 
-.selectedScriptCard {
-  border-color: #91d4a9;
-  box-shadow: 0 0 0 1px rgb(145 212 169 / 32%);
+.scriptNameLabel {
+  color: #a4afd3;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.scriptNameInput {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border: 1px solid #303a4a;
+  border-radius: 5px;
+  color: #f3f5ff;
+  background: #0c1016;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.scriptCardOpen {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  padding: 4px 0 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
 }
 
 .scriptSummary {

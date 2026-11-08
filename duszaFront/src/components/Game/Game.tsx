@@ -16,7 +16,13 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const addScript = () => {
 		const id = Math.max(...scripts.map(script => script.id)) + 1;
 		setScripts(current => [...current, { id, name: `Script ${id}`, code: '' }]);
-		setActiveScriptId(id);
+		setActiveScriptId(null);
+	};
+
+	const updateScriptName = (id: number, name: string) => {
+		setScripts(current => current.map(script =>
+			script.id === id ? { ...script, name } : script
+		));
 	};
 
 	const removeActiveScript = () => {
@@ -86,19 +92,31 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 					) : (
 						<div className={styles.scriptList} aria-label="Script kiválasztása">
 							{scripts.map(script => (
-								<button
-									key={script.id}
-									type="button"
-									aria-pressed={false}
-									onClick={() => setActiveScriptId(script.id)}
-									className={styles.scriptCard}
-								>
-									<strong>{script.name}</strong>
-									<span className={styles.scriptSummary}>
-										{script.code.trim() || 'Üres script'}
-									</span>
-									<span className={styles.scriptCardHint}>Kattints a szerkesztéshez</span>
-								</button>
+								<article key={script.id} className={styles.scriptCard}>
+									<label className={styles.scriptNameLabel} htmlFor={`script-name-${script.id}`}>
+										Script neve
+									</label>
+									<input
+										id={`script-name-${script.id}`}
+										className={styles.scriptNameInput}
+										value={script.name}
+										maxLength={40}
+										onChange={event => updateScriptName(script.id, event.target.value)}
+										onBlur={() => {
+											if (!script.name.trim()) updateScriptName(script.id, `Script ${script.id}`);
+										}}
+									/>
+									<button
+										type="button"
+										onClick={() => setActiveScriptId(script.id)}
+										className={styles.scriptCardOpen}
+									>
+										<span className={styles.scriptSummary}>
+											{script.code.trim() || 'Üres script'}
+										</span>
+										<span className={styles.scriptCardHint}>Kattints a szerkesztéshez</span>
+									</button>
+								</article>
 							))}
 						</div>
 					)}
