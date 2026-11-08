@@ -74,7 +74,6 @@ const HomePage: React.FC<HomePageProps> = ({ username, avatarId, onAvatarChange,
           </div>
           <figure className={styles.boardFigure}>
             <img src={mapImage} alt="Robot, aranyak és akadályok egy négyzetrácsos pályán" />
-            <figcaption><span aria-hidden="true">●</span> Mintapálya</figcaption>
           </figure>
         </main>
       )}
