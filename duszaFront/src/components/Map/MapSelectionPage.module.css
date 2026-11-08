@@ -137,34 +137,6 @@
   box-shadow: 0 0 0 1px rgb(188 231 199 / 50%), 0 14px 28px rgb(0 0 0 / 32%), 0 0 18px rgb(113 215 190 / 16%);
 }
 
-.previewArea {
-  position: relative;
-  display: grid;
-  min-height: 180px;
-  place-items: center;
-  padding: 18px 20px;
-  border-bottom: 1px solid #282e55;
-  background: radial-gradient(ellipse at center, rgb(145 205 162 / 10%), #10142a 74%);
-}
-
-.mapPreview {
-  width: min(100%, 234px);
-  justify-self: center;
-}
-
-.previewGoldCount {
-  position: absolute;
-  right: 12px;
-  bottom: 10px;
-  padding: 4px 7px;
-  border: 1px solid rgb(244 184 63 / 38%);
-  border-radius: 8px;
-  color: #f6d985;
-  background: rgb(31 29 24 / 90%);
-  font-size: 11px;
-  font-weight: 700;
-}
-
 .cardContent {
   display: grid;
   gap: 12px;
@@ -345,10 +317,6 @@
 
   .pageHeader h1 {
     font-size: 30px;
-  }
-
-  .previewArea {
-    min-height: 145px;
   }
 
   .mapGrid {
