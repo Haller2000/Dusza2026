@@ -231,6 +231,7 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const [runtimeFrame, setRuntimeFrame] = useState<RuntimeFrame>(() => createInitialRuntimeFrame(map));
 	const [runtimeError, setRuntimeError] = useState<MineScriptRuntimeError | null>(null);
 	const [savedRunSummary, setSavedRunSummary] = useState<SavedRunSummary | null>(null);
+	const [isDocumentationOpen, setIsDocumentationOpen] = useState(false);
 	const [isRunning, setIsRunning] = useState(false);
 	const [boardSize, setBoardSize] = useState({ width: 0, height: 0 });
 	const importFileRef = useRef<HTMLInputElement>(null);
@@ -700,6 +701,125 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 					</section>
 				</div>
 			)}
+			{isDocumentationOpen && (
+				<div
+					className={styles.documentationOverlay}
+					onMouseDown={event => {
+						if (event.target === event.currentTarget) setIsDocumentationOpen(false);
+					}}
+					onKeyDown={event => {
+						if (event.key === 'Escape') setIsDocumentationOpen(false);
+					}}
+				>
+					<section
+						className={styles.documentationDialog}
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby="script-documentation-title"
+					>
+						<header className={styles.documentationHeader}>
+							<div>
+								<span className={styles.documentationEyebrow}>GYORS SEGÍTSÉG</span>
+								<h2 id="script-documentation-title">Script dokumentáció</h2>
+							</div>
+							<button
+								type="button"
+								className={styles.documentationCloseButton}
+								onClick={() => setIsDocumentationOpen(false)}
+								aria-label="Dokumentáció bezárása"
+								autoFocus
+							>
+								×
+							</button>
+						</header>
+						<div className={styles.documentationContent}>
+							<section>
+								<h3>1. Utasítások és vezérlő kulcsszavak</h3>
+								<dl className={styles.documentationList}>
+									<div><dt><code>set név to érték</code></dt><dd>Változó létrehozása vagy értékadás. A <code>to</code> kötelező elválasztó.</dd></div>
+									<div><dt><code>if feltétel</code></dt><dd>Feltételes ág kezdete; csak igaz logikai feltételnél fut le.</dd></div>
+									<div><dt><code>else</code></dt><dd>Az előző <code>if</code> hamis ága. Csak közvetlenül egy <code>if</code>-hez tartozhat.</dd></div>
+									<div><dt><code>while feltétel</code></dt><dd>A blokk ismétlése, amíg a logikai feltétel igaz.</dd></div>
+									<div><dt><code>step forward érték</code></dt><dd>Előrelép a robot irányába a megadott számú mezőt. Falnak vagy a pályán kívülre lépve a futás hibával leáll.</dd></div>
+									<div><dt><code>turn by érték</code></dt><dd>Fordulás: 0 nincs fordulat, 1 balra, 2 hátra, 3 jobbra. A forgás négyesével ismétlődik.</dd></div>
+									<div><dt><code>mine here</code></dt><dd>Begyűjti az aranyat az aktuális mezőről. Ha ott nincs arany, a futás hibával leáll.</dd></div>
+									<div><dt><code>print érték</code></dt><dd>Egy változó vagy literál kiírása a konzolra.</dd></div>
+								</dl>
+							</section>
+							<section>
+								<h3>2. Beépített lekérdezés</h3>
+								<dl className={styles.documentationList}>
+									<div><dt><code>isThere érték</code></dt><dd>A robot előtti mezőt vizsgálja, logikai értéket ad vissza. <code>0</code>: üres, <code>1</code>: fal vagy pályán kívüli mező, <code>2</code>: arany.</dd></div>
+								</dl>
+								<p>Használható például értékadásban és feltételben: <code>set vanArany to isThere 2</code>, illetve <code>if isThere 1</code>.</p>
+							</section>
+							<section>
+								<h3>3. Értékek, változók és típusok</h3>
+								<ul>
+									<li>Egész szám: a közvetlenül beírt szám <code>0</code> és <code>100</code> közé essen.</li>
+									<li>Logikai konstansok: <code>true</code> (igaz) és <code>false</code> (hamis).</li>
+									<li>A változónév angol betűvel kezdődjön, utána angol betű és szám állhat. Példa: <code>lepes2</code>.</li>
+									<li>A kulcsszavak nem használhatók változónévként; a kis- és nagybetűk számítanak az utasításokban.</li>
+									<li>Előbb értéket kell adni egy változónak, csak utána használható. A típusa az első értékadáskor rögzül; egész és logikai típus között nem változtatható.</li>
+									<li>A <code>step</code> egész számot, az <code>if</code> és <code>while</code> logikai értéket vár.</li>
+								</ul>
+								<pre className={styles.documentationCode}>{`set lepes to 0
+set vanArany to isThere 2
+set lepes to lepes + 1`}</pre>
+							</section>
+							<section>
+								<h3>4. Operátorok</h3>
+								<dl className={styles.documentationList}>
+									<div><dt>Aritmetika</dt><dd><code>+</code> összeadás, <code>-</code> kivonás, <code>*</code> szorzás. Egész operandusokkal használhatók.</dd></div>
+									<div><dt>Összehasonlítás</dt><dd><code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code> egész számokhoz; <code>=</code> vagy <code>==</code> egyenlőséghez; <code>&lt;&gt;</code> vagy <code>!=</code> különbözőséghez. Az egyenlőség két oldalának azonos típusúnak kell lennie.</dd></div>
+									<div><dt>Logika</dt><dd><code>and</code> (ÉS), <code>or</code> (VAGY) két logikai értéket kapcsol össze; <code>not</code> (NEM) megfordít egy logikai értéket.</dd></div>
+								</dl>
+								<p>Egy kifejezés egyszerű érték, <code>not érték</code>, <code>isThere érték</code> vagy két operandus és egy operátor lehet, például <code>lepes &lt; 10</code>. Zárójel és összetett, egymásba ágyazott kifejezés nem támogatott.</p>
+							</section>
+							<section>
+								<h3>5. Elágazás és ciklus</h3>
+								<p>A blokk utasításait szóközökkel kell behúzni; használj következetesen két szóközt szintenként. Tabulátor nem használható. Az <code>else</code> az adott <code>if</code> blokkal egy szintre kerül.</p>
+								<pre className={styles.documentationCode}>{`if isThere 2
+  step forward 1
+  mine here
+else
+  turn by 1
+while lepes < 10
+  step forward 1
+  set lepes to lepes + 1`}</pre>
+							</section>
+							<section>
+								<h3>6. Formázási szabályok és példa</h3>
+								<ul>
+									<li>Az utasítások és kulcsszavak pontos alakját használd, például <code>step forward 1</code> és <code>turn by 1</code>.</li>
+									<li>A tokenek között pontosan egy szóköz legyen; a sor végén ne legyen szóköz.</li>
+									<li>Üres sor és tabulátor nem megengedett.</li>
+									<li>A program legfeljebb 1000 utasítást dolgozhat fel; a ciklusfeltételek ellenőrzése is beleszámít.</li>
+								</ul>
+								<pre className={styles.documentationCode}>{`set lepes to 0
+while lepes < 3
+  if isThere 2
+    step forward 1
+    mine here
+  else
+    turn by 1
+  set lepes to lepes + 1
+print lepes`}</pre>
+							</section>
+							<p className={styles.documentationNote}>A szerkesztő futtatás előtt jelzi a talált szintaktikai és típushibákat. A hibás futás (például falnak lépés vagy arany nélküli bányászás) leáll.</p>
+						</div>
+						<footer className={styles.documentationFooter}>
+							<button
+								type="button"
+								className={styles.documentationDoneButton}
+								onClick={() => setIsDocumentationOpen(false)}
+							>
+								Vissza a scripthez
+							</button>
+						</footer>
+					</section>
+				</div>
+			)}
 			<div className={styles.workspace}>
 				<section className={styles.mapPanel} aria-label="Kiválasztott pálya">
 					<div className={styles.panelHeading}>
@@ -734,6 +854,9 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 					<div className={styles.panelHeading}>
 						<h2>Scriptek</h2>
 						<div className={styles.scriptActions}>
+							<button type="button" onClick={() => setIsDocumentationOpen(true)} className={styles.addButton}>
+								Dokumentáció
+							</button>
 							<input
 								ref={importFileRef}
 								type="file"

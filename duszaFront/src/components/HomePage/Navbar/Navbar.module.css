@@ -21,14 +21,14 @@
   align-items: center;
   gap: 10px;
   color: #382416;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 900;
   text-shadow: 1px 2px 0 #f4d8a4;
 }
 
 .brandMark {
   color: #674127;
-  font-size: 20px;
+  font-size: 21px;
   text-shadow: 1px 2px 0 #51351f;
 }
 
@@ -49,7 +49,7 @@
   box-shadow: 0 3px 0 #9c7043;
   cursor: pointer;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
 }
 
@@ -65,7 +65,7 @@
 
 .accountChevron {
   color: #876847;
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1;
 }
 
@@ -90,7 +90,7 @@
   padding: 7px 6px 10px;
   border-bottom: 1px solid #c5a274;
   color: #82603a;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -131,7 +131,7 @@
   border-radius: 3px;
   color: #557a45;
   background: #fff3d4;
-  font-size: 18px;
+  font-size: 19px;
 }
 
 .menuLink > span:nth-child(2) {
@@ -142,17 +142,17 @@
 }
 
 .menuLink strong {
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .menuLink small {
   color: #876847;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .menuArrow {
   color: #876847;
-  font-size: 22px;
+  font-size: 24px;
 }
 
 .logoutButton {
@@ -188,6 +188,6 @@
 
   .brand {
     gap: 7px;
-    font-size: 12px;
+    font-size: 13px;
   }
 }

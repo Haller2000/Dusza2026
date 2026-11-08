@@ -14,7 +14,7 @@
   background: #191e3d;
   cursor: pointer;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -26,14 +26,14 @@
 .gameEyebrow {
   color: #53c9f5;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
 
 .gameHeader h1 {
   margin: 6px 0 0;
   color: #f4f5fb;
-  font-size: 32px;
+  font-size: 34px;
 }
 
 .workspace {
@@ -75,12 +75,12 @@
 .panelHeading h2 {
   margin: 0;
   color: #f4f5fb;
-  font-size: 17px;
+  font-size: 18px;
 }
 
 .panelHeading > span {
   color: #a4afd3;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .scriptActions {
@@ -97,7 +97,7 @@
 .scriptFeedbackError {
   padding: 8px 14px;
   border-top: 1px solid #293241;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -121,13 +121,13 @@
   background: #193329;
   cursor: pointer;
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
 
 .addButton span {
   margin-right: 4px;
-  font-size: 16px;
+  font-size: 17px;
 }
 
 .removeButton {
@@ -171,14 +171,14 @@
 .scriptCardName {
   overflow: hidden;
   color: #f3f5ff;
-  font-size: 14px;
+  font-size: 15px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .activeScriptName {
   color: #f3f5ff;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .scriptNameForm {
@@ -199,7 +199,7 @@
   color: #f3f5ff;
   background: #0c1016;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .saveNameButton {
@@ -211,7 +211,7 @@
   background: #193329;
   cursor: pointer;
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -228,7 +228,7 @@
   min-height: 34px;
   color: #a4afd3;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
   overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
@@ -237,7 +237,7 @@
 
 .scriptCardHint {
   color: #bce7c7;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .scriptEditorPanel {
@@ -256,7 +256,7 @@
   gap: 12px;
   padding: 8px 0;
   color: #a4afd3;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .editorActions {
@@ -278,7 +278,7 @@
   background: #172d3a;
   cursor: pointer;
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -358,7 +358,7 @@
   padding: 20px;
   border: 0;
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.65;
   tab-size: 2;
   white-space: pre;
@@ -422,7 +422,7 @@
   gap: 6px;
   padding: 10px 14px;
   border-top: 1px solid #293241;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -442,7 +442,7 @@
   }
 
   .gameHeader h1 {
-    font-size: 26px;
+    font-size: 28px;
   }
 
   .workspace {
@@ -750,7 +750,7 @@
   padding: 12px 0;
   border-bottom: 1px solid #c9a878;
   color: #765a3c;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .runtimeActions {
@@ -771,7 +771,7 @@
   box-shadow: 0 2px 0 #9c7043;
   cursor: pointer;
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
 }
@@ -839,12 +839,12 @@
 
 .runtimeStats span {
   color: #82603a;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .runtimeStats strong {
   color: #54351f;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .runtimeError {
@@ -856,7 +856,7 @@
   border-radius: 4px;
   color: #7a3025;
   background: #f5d6bd;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .runtimeConsole {
@@ -864,7 +864,7 @@
   gap: 6px;
   margin-top: 12px;
   color: #67482c;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .consoleOutput {
@@ -876,7 +876,7 @@
   color: #38512e;
   background: #fff4d9;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .emptyConsole {
@@ -930,14 +930,14 @@
 .resultEyebrow {
   color: #557a45;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 
 .resultHeader h2 {
   margin: 5px 0 0;
   color: #54351f;
-  font-size: 23px;
+  font-size: 25px;
 }
 
 .resultCloseButton {
@@ -949,14 +949,14 @@
   background: #efd7a9;
   cursor: pointer;
   font: inherit;
-  font-size: 24px;
+  font-size: 26px;
   line-height: 1;
 }
 
 .resultDescription {
   margin: 12px 0 18px;
   color: #765a3c;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .resultGrid {
@@ -976,21 +976,21 @@
 
 .resultGrid dt {
   color: #82603a;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .resultGrid dd {
   overflow-wrap: anywhere;
   margin: 4px 0 0;
   color: #54351f;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 .resultConsole {
   margin-top: 14px;
   color: #67482c;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .resultConsole pre {
@@ -1022,12 +1022,192 @@
   box-shadow: 0 2px 0 #38512e;
   cursor: pointer;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
 .resultDoneButton:focus-visible,
 .resultCloseButton:focus-visible {
+  outline: 2px solid var(--grass);
+  outline-offset: 3px;
+}
+
+.documentationOverlay {
+  position: fixed;
+  z-index: 21;
+  inset: 0;
+  display: grid;
+  overflow-y: auto;
+  place-items: center;
+  padding: 20px;
+  background: rgb(37 28 20 / 62%);
+  backdrop-filter: blur(3px);
+}
+
+.documentationDialog {
+  display: flex;
+  width: min(100%, 680px);
+  max-height: min(86svh, 820px);
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 22px;
+  border: 4px solid #6f482b;
+  border-radius: 8px;
+  color: #55391f;
+  background:
+    radial-gradient(circle, rgb(145 101 57 / 7%) 1px, transparent 1.5px),
+    linear-gradient(180deg, #fff1d2, #f3dfb8);
+  background-size: 11px 11px, 100% 100%;
+  box-shadow: 0 16px 48px rgb(34 22 14 / 42%);
+}
+
+.documentationHeader,
+.documentationFooter {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.documentationEyebrow {
+  color: #557a45;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.documentationHeader h2 {
+  margin: 5px 0 0;
+  color: #54351f;
+  font-size: 25px;
+}
+
+.documentationCloseButton {
+  width: 36px;
+  height: 36px;
+  border: 2px solid #b88a55;
+  border-radius: 4px;
+  color: #624326;
+  background: #efd7a9;
+  cursor: pointer;
+  font: inherit;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.documentationContent {
+  display: grid;
+  overflow-y: auto;
+  gap: 18px;
+  margin: 16px -4px 0 0;
+  padding: 0 12px 4px 0;
+}
+
+.documentationContent section {
+  display: grid;
+  gap: 8px;
+}
+
+.documentationContent h3 {
+  margin: 0;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #c9a878;
+  color: #54351f;
+  font-size: 17px;
+}
+
+.documentationContent p,
+.documentationContent ul {
+  margin: 0;
+  color: #765a3c;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.documentationContent ul {
+  display: grid;
+  gap: 4px;
+  padding-left: 20px;
+}
+
+.documentationContent code {
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: #38512e;
+  background: rgb(85 122 69 / 12%);
+  font-family: var(--mono);
+  font-size: 0.95em;
+}
+
+.documentationList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.documentationList > div {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.8fr) minmax(0, 1.5fr);
+  align-items: baseline;
+  gap: 10px;
+}
+
+.documentationList dt {
+  color: #54351f;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.documentationList dd {
+  margin: 0;
+  color: #765a3c;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.documentationCode {
+  overflow-x: auto;
+  margin: 0;
+  padding: 10px 12px;
+  border: 2px solid #b88a55;
+  border-radius: 4px;
+  color: #38512e;
+  background: #fff4d9;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.documentationNote {
+  padding: 10px 12px;
+  border-left: 3px solid #78985b;
+  background: rgb(228 237 204 / 72%);
+}
+
+.documentationFooter {
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #c9a878;
+}
+
+.documentationDoneButton {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 2px solid #38512e;
+  border-radius: 4px;
+  color: #fff3d4;
+  background: linear-gradient(180deg, #78985b, #557a45);
+  box-shadow: 0 2px 0 #38512e;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.documentationDoneButton:focus-visible,
+.documentationCloseButton:focus-visible {
   outline: 2px solid var(--grass);
   outline-offset: 3px;
 }
@@ -1043,5 +1223,19 @@
 
   .resultGrid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .documentationOverlay {
+    padding: 12px;
+  }
+
+  .documentationDialog {
+    max-height: 92svh;
+    padding: 16px;
+  }
+
+  .documentationList > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
   }
 }

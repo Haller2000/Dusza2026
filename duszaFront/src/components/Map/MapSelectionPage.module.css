@@ -17,7 +17,7 @@
   background: #191e3d;
   cursor: pointer;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
@@ -44,7 +44,7 @@
   margin-bottom: 8px;
   color: #53c9f5;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0;
 }
@@ -52,7 +52,7 @@
 .pageHeader h1 {
   margin: 0 0 10px;
   color: #f4f5fb;
-  font-size: 36px;
+  font-size: 38px;
   font-weight: 800;
   line-height: 1.12;
   letter-spacing: 0;
@@ -62,7 +62,7 @@
 .sectionHeading p {
   margin: 0;
   color: #a4afd3;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.55;
 }
 
@@ -81,7 +81,7 @@
 .sectionHeading h2 {
   margin: 0 0 5px;
   color: #f3f5ff;
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 750;
 }
 
@@ -91,7 +91,7 @@
   border-radius: 8px;
   color: #bce7c7;
   background: #151a34;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 650;
   white-space: nowrap;
 }
@@ -160,7 +160,7 @@
 .mapName {
   overflow: hidden;
   color: #f3f5ff;
-  font-size: 16px;
+  font-size: 17px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -177,7 +177,7 @@
   border-radius: 7px;
   color: #c7cee8;
   background: #191e3d;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -201,7 +201,7 @@
 
 .cardHint {
   color: #9da9d1;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .selectedCard .cardHint {
@@ -235,7 +235,7 @@
 
 .emptyState span:last-child {
   max-width: 400px;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -248,7 +248,7 @@
   border-radius: 9px;
   color: #bce7c7;
   background: #193329;
-  font-size: 22px;
+  font-size: 24px;
 }
 
 .errorMessage {
@@ -280,7 +280,7 @@
 .selectionFooter > span {
   overflow: hidden;
   color: #b7c0dc;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -296,7 +296,7 @@
   background: linear-gradient(110deg, #71d7fa, #4bb9e7);
   cursor: pointer;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 750;
   transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
 }
@@ -330,7 +330,7 @@
   }
 
   .pageHeader h1 {
-    font-size: 30px;
+    font-size: 32px;
   }
 
   .mapGrid {
@@ -349,13 +349,13 @@
   }
 
   .selectionFooter > span {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .startButton {
     min-height: 40px;
     padding: 0 11px;
-    font-size: 12px;
+    font-size: 13px;
   }
 }
 
