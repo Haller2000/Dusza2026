@@ -103,6 +103,12 @@ const Timelapse: React.FC<{ game: RecentGame }> = ({ game }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const mapRows = game.map_snapshot.map_data.split(/\r?\n/);
   const frame = frames[frameIndex];
+  const collectedGold = new Set<string>();
+  let previousGold = 0;
+  frames.slice(0, frameIndex + 1).forEach(step => {
+    if (step.gold > previousGold) collectedGold.add(`${step.x},${step.y}`);
+    previousGold = step.gold;
+  });
 
   useEffect(() => {
     if (!isPlaying || frames.length < 2) return;
@@ -131,7 +137,14 @@ const Timelapse: React.FC<{ game: RecentGame }> = ({ game }) => {
         {Array.from({ length: game.map_snapshot.height }, (_, y) =>
           Array.from({ length: game.map_snapshot.width }, (_, x) => {
             const isRobot = frame.x === x && frame.y === y;
-            const cell = isRobot ? frame.facing : (mapRows[y]?.[x] ?? '.') as MapTile;
+            const originalCell = mapRows[y]?.[x] ?? '.';
+            const cell = isRobot
+              ? frame.facing
+              : originalCell === '^' || originalCell === '<' || originalCell === 'v' || originalCell === '>'
+                ? '.'
+                : originalCell === '@' && collectedGold.has(`${x},${y}`)
+                  ? '.'
+                  : originalCell as MapTile;
             return (
               <span key={`${x}-${y}`} className={`${styles.timelapseTile} ${isRobot ? styles.timelapseRobot : ''}`}>
                 <MapTileIcon cell={cell} className={styles.timelapseTileIcon} />
