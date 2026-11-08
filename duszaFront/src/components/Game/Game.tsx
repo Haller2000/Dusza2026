@@ -26,6 +26,20 @@ interface EditorScript extends StoredScript {
 	savedId: number | null;
 }
 
+interface SavedRunSummary {
+	scoreId: number;
+	points: number;
+	gold: number;
+	steps: number;
+	instructionCount: number;
+	scriptName: string;
+	consoleOutput: string[];
+	robotX: number;
+	robotY: number;
+	facing: RuntimeFrame['facing'];
+	historyCount: number;
+}
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
 	Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
@@ -216,6 +230,7 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const [scriptStatus, setScriptStatus] = useState('');
 	const [runtimeFrame, setRuntimeFrame] = useState<RuntimeFrame>(() => createInitialRuntimeFrame(map));
 	const [runtimeError, setRuntimeError] = useState<MineScriptRuntimeError | null>(null);
+	const [savedRunSummary, setSavedRunSummary] = useState<SavedRunSummary | null>(null);
 	const [isRunning, setIsRunning] = useState(false);
 	const [boardSize, setBoardSize] = useState({ width: 0, height: 0 });
 	const importFileRef = useRef<HTMLInputElement>(null);
@@ -420,6 +435,7 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 		cancelExecution();
 		setScriptError('');
 		setScriptStatus('');
+		setSavedRunSummary(null);
 		setRuntimeError(null);
 		const initialFrame = createInitialRuntimeFrame(map);
 		latestRunFrameRef.current = initialFrame;
@@ -495,25 +511,46 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 			return;
 		}
 
+		const finalFrame = latestRunFrameRef.current;
+		const history = runHistoryRef.current;
+		const steps = movementStepsRef.current;
 		setIsSavingScore(true);
 		setScriptError('');
 		setScriptStatus('Eredmény mentése...');
 		const request: Record<string, unknown> = {
 			map_id: map.id,
-			gold: latestRunFrameRef.current.goldCollected,
-			steps: movementStepsRef.current,
-			history: runHistoryRef.current,
+			gold: finalFrame.goldCollected,
+			steps,
+			history,
 			script: script.code,
-			console: latestRunFrameRef.current.consoleOutput,
+			console: finalFrame.consoleOutput,
 		};
 		if (script.savedId !== null) request.script_id = script.savedId;
 
 		try {
-			const response = await axios.post<{ score_id: number; points: number }>(
+			const response = await axios.post<{
+				score_id: number;
+				points: number;
+				gold: number;
+				steps: number;
+			}>(
 				'/api/save-ending/',
 				request,
 				{ headers: { Authorization: `Token ${token}` } },
 			);
+			setSavedRunSummary({
+				scoreId: response.data.score_id,
+				points: response.data.points,
+				gold: response.data.gold,
+				steps: response.data.steps,
+				instructionCount: finalFrame.instructionCount,
+				scriptName: script.name,
+				consoleOutput: [...finalFrame.consoleOutput],
+				robotX: finalFrame.robotX,
+				robotY: finalFrame.robotY,
+				facing: finalFrame.facing,
+				historyCount: history.length,
+			});
 			setScriptStatus(`Eredmény elmentve: ${Number(response.data.points).toLocaleString('hu-HU', { maximumFractionDigits: 2 })} pont.`);
 		} catch (error: unknown) {
 			const responseData = axios.isAxiosError(error) ? error.response?.data : null;
@@ -585,6 +622,69 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 				<span className={styles.gameEyebrow}>JÁTÉK</span>
 				<h1>{map.name}</h1>
 			</header>
+			{savedRunSummary && (
+				<div
+					className={styles.resultOverlay}
+					onMouseDown={event => {
+						if (event.target === event.currentTarget) setSavedRunSummary(null);
+					}}
+				>
+					<section
+						className={styles.resultDialog}
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby="saved-run-title"
+						aria-describedby="saved-run-description"
+					>
+						<header className={styles.resultHeader}>
+							<div>
+								<span className={styles.resultEyebrow}>SIKERES MENTÉS · #{savedRunSummary.scoreId}</span>
+								<h2 id="saved-run-title">A futás adatai</h2>
+							</div>
+							<button
+								type="button"
+								className={styles.resultCloseButton}
+								onClick={() => setSavedRunSummary(null)}
+								aria-label="A futás adatainak bezárása"
+								autoFocus
+							>
+								×
+							</button>
+						</header>
+						<p id="saved-run-description" className={styles.resultDescription}>
+							A futás eredménye sikeresen el lett mentve.
+						</p>
+						<dl className={styles.resultGrid}>
+							<div><dt>Pálya</dt><dd>{map.name}</dd></div>
+							<div><dt>Script</dt><dd>{savedRunSummary.scriptName}</dd></div>
+							<div><dt>Pontszám</dt><dd>{Number(savedRunSummary.points).toLocaleString('hu-HU', { maximumFractionDigits: 2 })}</dd></div>
+							<div><dt>Begyűjtött arany</dt><dd>{savedRunSummary.gold}</dd></div>
+							<div><dt>Megtett lépések</dt><dd>{savedRunSummary.steps}</dd></div>
+							<div><dt>Végrehajtott utasítás</dt><dd>{savedRunSummary.instructionCount}</dd></div>
+							<div>
+								<dt>Végső robotpozíció</dt>
+								<dd>{savedRunSummary.robotX + 1}, {savedRunSummary.robotY + 1} · {savedRunSummary.facing}</dd>
+							</div>
+							<div><dt>Mentett előzmény</dt><dd>{savedRunSummary.historyCount} állapot</dd></div>
+						</dl>
+						<div className={styles.resultConsole}>
+							<strong>Konzolkimenet</strong>
+							<pre>{savedRunSummary.consoleOutput.length
+								? savedRunSummary.consoleOutput.join('\n')
+								: 'Nem volt konzolkimenet.'}</pre>
+						</div>
+						<footer className={styles.resultFooter}>
+							<button
+								type="button"
+								className={styles.resultDoneButton}
+								onClick={() => setSavedRunSummary(null)}
+							>
+								Rendben
+							</button>
+						</footer>
+					</section>
+				</div>
+			)}
 			<div className={styles.workspace}>
 				<section className={styles.mapPanel} aria-label="Kiválasztott pálya">
 					<div className={styles.panelHeading}>
