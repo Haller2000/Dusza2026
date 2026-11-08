@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import type { SelectableMap } from '../Map/MapSelectionPage';
-import MapGridPreview from '../Map/MapGridPreview';
+import MapTileIcon, { type MapTile } from '../Map/MapTileIcon';
 import { validateMineScript, type MineScriptDiagnostic } from './mineScriptValidator';
 import styles from './Game.module.css';
 
@@ -8,6 +8,49 @@ interface GameProps {
 	map: SelectableMap;
 	onBack: () => void;
 }
+
+const renderFoggedMap = (map: SelectableMap) => {
+	const rows = map.map_data.trim().split(/\r?\n/).map(row => [...row]);
+	const robot = rows.flatMap((row, y) => row.map((cell, x) => ({ cell, x, y })))
+		.find(({ cell }) => ['>', '<', '^', 'v'].includes(cell));
+	const direction = robot ? {
+		'>': [1, 0],
+		'<': [-1, 0],
+		'^': [0, -1],
+		'v': [0, 1],
+	}[robot.cell] : undefined;
+	const frontX = robot && direction ? robot.x + direction[0] : -1;
+	const frontY = robot && direction ? robot.y + direction[1] : -1;
+	const frontInBounds = frontY >= 0 && frontY < rows.length && frontX >= 0 && frontX < (rows[frontY]?.length ?? 0);
+
+	return (
+		<div
+			className={styles.fogGrid}
+			style={{ gridTemplateColumns: `repeat(${map.width}, minmax(0, 1fr))` }}
+			role="img"
+			aria-label={`${map.name}: a robot és az előtte lévő mező látható`}
+		>
+			{Array.from({ length: map.height }, (_, y) =>
+				Array.from({ length: map.width }, (_, x) => {
+					const isRobot = robot?.x === x && robot.y === y;
+					const isFront = frontInBounds && frontX === x && frontY === y;
+					const tile = isRobot || isFront ? rows[y]?.[x] ?? '.' : '.';
+					const className = [
+						styles.fogTile,
+						isRobot ? styles.robotTile : '',
+						isFront ? styles.litTile : '',
+					].filter(Boolean).join(' ');
+
+					return (
+						<span key={`${x}-${y}`} className={className}>
+							<MapTileIcon cell={tile as MapTile} className={styles.fogTileIcon} />
+						</span>
+					);
+				})
+			)}
+		</div>
+	);
+};
 
 const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]) => {
 	let lineStart = 0;
@@ -111,7 +154,7 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 						<span>{map.width} × {map.height}</span>
 					</div>
 					<div className={styles.board}>
-						<MapGridPreview mapData={map.map_data} width={map.width} height={map.height} className={styles.mapGrid} />
+						{renderFoggedMap(map)}
 					</div>
 				</section>
 				<section className={styles.scriptsPanel} aria-label="Scriptek">
