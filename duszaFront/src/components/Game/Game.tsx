@@ -208,6 +208,7 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 		() => Boolean(localStorage.getItem('authToken'))
 	);
 	const [isSavingScript, setIsSavingScript] = useState(false);
+	const [isSavingScore, setIsSavingScore] = useState(false);
 	const [isDeletingScript, setIsDeletingScript] = useState(false);
 	const [scriptError, setScriptError] = useState(() =>
 		localStorage.getItem('authToken') ? '' : 'A scriptek mentéséhez be kell jelentkezni.'
@@ -223,6 +224,9 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const scriptHighlightRef = useRef<HTMLPreElement>(null);
 	const executionRef = useRef<Generator<RuntimeFrame> | null>(null);
 	const executionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const latestRunFrameRef = useRef(runtimeFrame);
+	const runHistoryRef = useRef<Array<{ x: number; y: number; facing: RuntimeFrame['facing']; line: number; gold: number }>>([]);
+	const movementStepsRef = useRef(0);
 	const activeScript = scripts.find(script => script.id === activeScriptId);
 	const diagnostics = activeScript ? validateMineScript(activeScript.code) : [];
 	const cellSize = Math.max(1, Math.floor(Math.min(
@@ -417,9 +421,20 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 		setScriptError('');
 		setScriptStatus('');
 		setRuntimeError(null);
-		setRuntimeFrame(createInitialRuntimeFrame(map));
+		const initialFrame = createInitialRuntimeFrame(map);
+		latestRunFrameRef.current = initialFrame;
+		runHistoryRef.current = [{
+			x: initialFrame.robotX,
+			y: initialFrame.robotY,
+			facing: initialFrame.facing,
+			line: 0,
+			gold: 0,
+		}];
+		movementStepsRef.current = 0;
+		setRuntimeFrame(initialFrame);
 		setIsRunning(true);
-		executionRef.current = executeMineScript(activeScript.code, map);
+		const scriptAtStart = activeScript;
+		executionRef.current = executeMineScript(scriptAtStart.code, map);
 
 		const advance = () => {
 			const execution = executionRef.current;
@@ -429,10 +444,22 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 				if (result.done) {
 					cancelExecution();
 					setIsRunning(false);
-					setScriptStatus('A script futtatása befejeződött.');
+					void saveCompletedScore(scriptAtStart);
 					return;
 				}
-				setRuntimeFrame(result.value);
+				const frame = result.value;
+				const previousFrame = latestRunFrameRef.current;
+				movementStepsRef.current += Math.abs(frame.robotX - previousFrame.robotX)
+					+ Math.abs(frame.robotY - previousFrame.robotY);
+				runHistoryRef.current.push({
+					x: frame.robotX,
+					y: frame.robotY,
+					facing: frame.facing,
+					line: frame.currentLine,
+					gold: frame.goldCollected,
+				});
+				latestRunFrameRef.current = frame;
+				setRuntimeFrame(frame);
 				executionTimerRef.current = window.setTimeout(advance, 350);
 			} catch (error: unknown) {
 				cancelExecution();
@@ -459,6 +486,41 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 		setRuntimeError(null);
 		setRuntimeFrame(createInitialRuntimeFrame(map));
 		setScriptStatus('');
+	};
+
+	const saveCompletedScore = async (script: EditorScript) => {
+		const token = localStorage.getItem('authToken');
+		if (!token) {
+			setScriptStatus('A futás befejeződött; a pontszám mentéséhez be kell jelentkezni.');
+			return;
+		}
+
+		setIsSavingScore(true);
+		setScriptError('');
+		setScriptStatus('Eredmény mentése...');
+		const request: Record<string, unknown> = {
+			map_id: map.id,
+			gold: latestRunFrameRef.current.goldCollected,
+			steps: movementStepsRef.current,
+			history: runHistoryRef.current,
+			script: script.code,
+			console: latestRunFrameRef.current.consoleOutput,
+		};
+		if (script.savedId !== null) request.script_id = script.savedId;
+
+		try {
+			const response = await axios.post<{ score_id: number; points: number }>(
+				'/api/save-ending/',
+				request,
+				{ headers: { Authorization: `Token ${token}` } },
+			);
+			setScriptStatus(`Eredmény elmentve: ${Number(response.data.points).toLocaleString('hu-HU', { maximumFractionDigits: 2 })} pont.`);
+		} catch (error: unknown) {
+			const responseData = axios.isAxiosError(error) ? error.response?.data : null;
+			setScriptError(getApiErrorMessage(responseData) || 'Nem sikerült elmenteni az eredményt.');
+		} finally {
+			setIsSavingScore(false);
+		}
 	};
 
 	const importScripts = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -581,8 +643,8 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 					<div className={styles.runtimeToolbar}>
 						<span>{activeScript ? `Futtatás: ${activeScript.name}` : 'Válassz scriptet a futtatáshoz.'}</span>
 						<div className={styles.runtimeActions}>
-							<button type="button" onClick={startExecution} className={styles.runButton} disabled={!activeScript || diagnostics.length > 0 || isRunning || isLoadingScripts}>
-								Futtatás
+								<button type="button" onClick={startExecution} className={styles.runButton} disabled={!activeScript || diagnostics.length > 0 || isRunning || isSavingScore || isLoadingScripts}>
+									{isSavingScore ? 'Eredmény mentése...' : 'Futtatás'}
 							</button>
 							<button type="button" onClick={stopExecution} className={styles.controlButton} disabled={!isRunning}>
 								Leállítás
