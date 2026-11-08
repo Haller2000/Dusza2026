@@ -55,7 +55,7 @@
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
   --sans: 'Trebuchet MS', 'Segoe UI', sans-serif;
-  --heading: 'Trebuchet MS', 'Segoe UI', sans-serif;
+  --heading: 'Lobster Two', 'Trebuchet MS', sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
   font: 19px/145% var(--sans);
@@ -111,7 +111,7 @@ h2 {
 
 h1 {
   font-size: 59px;
-  letter-spacing: -1.68px;
+  letter-spacing: normal;
   margin: 32px 0;
   @media (max-width: 1024px) {
     font-size: 38px;
@@ -121,7 +121,7 @@ h1 {
 h2 {
   font-size: 26px;
   line-height: 118%;
-  letter-spacing: -0.24px;
+  letter-spacing: normal;
   margin: 0 0 8px;
   @media (max-width: 1024px) {
     font-size: 21px;
