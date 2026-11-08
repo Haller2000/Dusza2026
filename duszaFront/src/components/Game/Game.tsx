@@ -1,7 +1,13 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { SelectableMap } from '../Map/MapSelectionPage';
 import MapTileIcon, { type MapTile } from '../Map/MapTileIcon';
 import { validateMineScript, type MineScriptDiagnostic } from './mineScriptValidator';
+import {
+	createInitialRuntimeFrame,
+	executeMineScript,
+	MineScriptRuntimeError,
+	type RuntimeFrame,
+} from './mineScriptRuntime';
 import styles from './Game.module.css';
 
 interface GameProps {
@@ -9,19 +15,18 @@ interface GameProps {
 	onBack: () => void;
 }
 
-const renderFoggedMap = (map: SelectableMap) => {
-	const rows = map.map_data.trim().split(/\r?\n/).map(row => [...row]);
-	const robot = rows.flatMap((row, y) => row.map((cell, x) => ({ cell, x, y })))
-		.find(({ cell }) => ['>', '<', '^', 'v'].includes(cell));
-	const direction = robot ? {
+const renderFoggedMap = (map: SelectableMap, frame: RuntimeFrame) => {
+	const direction: Record<RobotDirection, [number, number]> = {
 		'>': [1, 0],
 		'<': [-1, 0],
 		'^': [0, -1],
 		'v': [0, 1],
-	}[robot.cell] : undefined;
-	const frontX = robot && direction ? robot.x + direction[0] : -1;
-	const frontY = robot && direction ? robot.y + direction[1] : -1;
-	const frontInBounds = frontY >= 0 && frontY < rows.length && frontX >= 0 && frontX < (rows[frontY]?.length ?? 0);
+	};
+	const [dx, dy] = direction[frame.facing];
+	const frontX = frame.robotX + dx;
+	const frontY = frame.robotY + dy;
+	const frontInBounds = frontY >= 0 && frontY < frame.mapGrid.length && frontX >= 0 && frontX < (frame.mapGrid[frontY]?.length ?? 0);
+	const explored = new Set(frame.explored);
 
 	return (
 		<div
@@ -32,13 +37,15 @@ const renderFoggedMap = (map: SelectableMap) => {
 		>
 			{Array.from({ length: map.height }, (_, y) =>
 				Array.from({ length: map.width }, (_, x) => {
-					const isRobot = robot?.x === x && robot.y === y;
+					const isRobot = frame.robotX === x && frame.robotY === y;
 					const isFront = frontInBounds && frontX === x && frontY === y;
-					const tile = isRobot || isFront ? rows[y]?.[x] ?? '.' : '.';
+					const isExplored = explored.has(`${x},${y}`);
+					const tile = isRobot ? frame.facing : isFront || isExplored ? frame.mapGrid[y]?.[x] ?? '.' : '.';
 					const className = [
 						styles.fogTile,
 						isRobot ? styles.robotTile : '',
 						isFront ? styles.litTile : '',
+						!isRobot && !isFront && !isExplored ? styles.hiddenTile : '',
 					].filter(Boolean).join(' ');
 
 					return (
@@ -52,7 +59,9 @@ const renderFoggedMap = (map: SelectableMap) => {
 	);
 };
 
-const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]) => {
+type RobotDirection = RuntimeFrame['facing'];
+
+const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[], currentLine: number) => {
 	let lineStart = 0;
 	return code.split('\n').map((line, lineIndex) => {
 		const lineEnd = lineStart + line.length;
@@ -67,7 +76,7 @@ const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]
 
 		if (!line.length) {
 			return (
-				<span key={lineIndex} className={lineDiagnostics.length ? styles.invalidCodeLine : undefined}>
+				<span key={lineIndex} className={`${lineDiagnostics.length ? styles.invalidCodeLine : ''} ${currentLine === lineIndex + 1 ? styles.runningCodeLine : ''}`}>
 					{lineDiagnostics.length ? <span className={styles.invalidCode}>{'\u00a0'}</span> : '\u00a0'}
 				</span>
 			);
@@ -89,7 +98,7 @@ const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]
 		if (cursor < line.length) segments.push(line.slice(cursor));
 
 		return (
-			<span key={lineIndex} className={lineDiagnostics.length ? styles.invalidCodeLine : undefined}>
+			<span key={lineIndex} className={`${lineDiagnostics.length ? styles.invalidCodeLine : ''} ${currentLine === lineIndex + 1 ? styles.runningCodeLine : ''}`}>
 				{segments}
 			</span>
 		);
@@ -101,10 +110,20 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const [activeScriptId, setActiveScriptId] = useState<number | null>(null);
 	const [isRenamingScript, setIsRenamingScript] = useState(false);
 	const [scriptNameDraft, setScriptNameDraft] = useState('');
+	const [runtimeFrame, setRuntimeFrame] = useState<RuntimeFrame>(() => createInitialRuntimeFrame(map));
+	const [isRunning, setIsRunning] = useState(false);
+	const [runtimeError, setRuntimeError] = useState<MineScriptRuntimeError | null>(null);
 	const scriptEditorRef = useRef<HTMLTextAreaElement>(null);
 	const scriptHighlightRef = useRef<HTMLPreElement>(null);
+	const timerRef = useRef<number | null>(null);
+	const executionRef = useRef<Generator<RuntimeFrame> | null>(null);
 	const activeScript = scripts.find(script => script.id === activeScriptId);
 	const diagnostics = activeScript ? validateMineScript(activeScript.code) : [];
+
+	useEffect(() => () => {
+		if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+		executionRef.current?.return(undefined);
+	}, []);
 
 	const addScript = () => {
 		const id = Math.max(...scripts.map(script => script.id)) + 1;
@@ -138,6 +157,50 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 		));
 	};
 
+	const stopExecution = () => {
+		if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+		timerRef.current = null;
+		executionRef.current?.return(undefined);
+		executionRef.current = null;
+		setIsRunning(false);
+	};
+
+	const resetExecution = () => {
+		stopExecution();
+		setRuntimeFrame(createInitialRuntimeFrame(map));
+		setRuntimeError(null);
+	};
+
+	const startExecution = () => {
+		if (!activeScript || diagnostics.length || isRunning) return;
+		stopExecution();
+		setRuntimeFrame(createInitialRuntimeFrame(map));
+		setRuntimeError(null);
+		setIsRunning(true);
+
+		const execution = executeMineScript(activeScript.code, map);
+		executionRef.current = execution;
+		const advance = () => {
+			try {
+				const result = execution.next();
+				if (result.done) {
+					executionRef.current = null;
+					setIsRunning(false);
+					return;
+				}
+				setRuntimeFrame(result.value);
+				timerRef.current = window.setTimeout(advance, 350);
+			} catch (error) {
+				executionRef.current = null;
+				setIsRunning(false);
+				setRuntimeError(error instanceof MineScriptRuntimeError
+					? error
+					: new MineScriptRuntimeError('E_RUNTIME', runtimeFrame.currentLine, 'Váratlan futásidejű hiba történt.'));
+			}
+		};
+		advance();
+	};
+
 	return (
 		<main className={styles.gamePage}>
 			<button type="button" onClick={onBack} className={styles.backButton}>
@@ -154,7 +217,27 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 						<span>{map.width} × {map.height}</span>
 					</div>
 					<div className={styles.board}>
-						{renderFoggedMap(map)}
+						{renderFoggedMap(map, runtimeFrame)}
+					</div>
+					<div className={styles.runtimeStats}>
+						<div><span>Arany</span><strong>{runtimeFrame.goldCollected}</strong></div>
+						<div><span>Utasítás</span><strong>{runtimeFrame.instructionCount} / 1000</strong></div>
+						<div><span>Robot</span><strong>{runtimeFrame.robotX + 1}, {runtimeFrame.robotY + 1}</strong></div>
+						<div><span>Irány</span><strong>{runtimeFrame.facing}</strong></div>
+					</div>
+					{runtimeError && (
+						<div className={styles.runtimeError} role="alert">
+							<strong>{runtimeError.code}</strong>
+							<span>{runtimeError.line > 0 ? `${runtimeError.line}. sor: ` : ''}{runtimeError.message}</span>
+						</div>
+					)}
+					<div className={styles.runtimeConsole} aria-live="polite">
+						<strong>Konzol</strong>
+						<div className={styles.consoleOutput}>
+							{runtimeFrame.consoleOutput.length ? runtimeFrame.consoleOutput.map((output, index) => (
+								<div key={`${index}-${output}`}>{output}</div>
+							)) : <span className={styles.emptyConsole}>Nincs kimenet</span>}
+						</div>
 					</div>
 				</section>
 				<section className={styles.scriptsPanel} aria-label="Scriptek">
@@ -163,6 +246,20 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 						<button type="button" onClick={addScript} className={styles.addButton} title="Új script">
 							<span aria-hidden="true">+</span> Új
 						</button>
+					</div>
+					<div className={styles.runtimeToolbar}>
+						<span>{activeScript ? `Futtatás: ${activeScript.name}` : 'Nyiss meg egy scriptet a futtatáshoz.'}</span>
+						<div className={styles.runtimeActions}>
+							<button type="button" onClick={startExecution} disabled={!activeScript || diagnostics.length > 0 || isRunning} className={styles.runButton}>
+								Futtatás
+							</button>
+							<button type="button" onClick={stopExecution} disabled={!isRunning} className={styles.controlButton}>
+								Leállítás
+							</button>
+							<button type="button" onClick={resetExecution} className={styles.controlButton}>
+								Alaphelyzet
+							</button>
+						</div>
 					</div>
 					{activeScript ? (
 						<div className={styles.scriptEditorPanel}>
@@ -214,7 +311,7 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 							</div>
 							<div className={styles.scriptEditorFrame}>
 								<pre ref={scriptHighlightRef} className={styles.scriptHighlight} aria-hidden="true">
-									{renderScriptHighlight(activeScript.code, diagnostics)}
+									{renderScriptHighlight(activeScript.code, diagnostics, runtimeFrame.currentLine)}
 								</pre>
 								<textarea
 									ref={scriptEditorRef}
