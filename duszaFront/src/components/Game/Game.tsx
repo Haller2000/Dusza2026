@@ -231,6 +231,7 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const [runtimeFrame, setRuntimeFrame] = useState<RuntimeFrame>(() => createInitialRuntimeFrame(map));
 	const [runtimeError, setRuntimeError] = useState<MineScriptRuntimeError | null>(null);
 	const [savedRunSummary, setSavedRunSummary] = useState<SavedRunSummary | null>(null);
+	const [isDocumentationOpen, setIsDocumentationOpen] = useState(false);
 	const [isRunning, setIsRunning] = useState(false);
 	const [boardSize, setBoardSize] = useState({ width: 0, height: 0 });
 	const importFileRef = useRef<HTMLInputElement>(null);
@@ -700,6 +701,87 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 					</section>
 				</div>
 			)}
+			{isDocumentationOpen && (
+				<div
+					className={styles.documentationOverlay}
+					onMouseDown={event => {
+						if (event.target === event.currentTarget) setIsDocumentationOpen(false);
+					}}
+					onKeyDown={event => {
+						if (event.key === 'Escape') setIsDocumentationOpen(false);
+					}}
+				>
+					<section
+						className={styles.documentationDialog}
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby="script-documentation-title"
+					>
+						<header className={styles.documentationHeader}>
+							<div>
+								<span className={styles.documentationEyebrow}>GYORS SEGÍTSÉG</span>
+								<h2 id="script-documentation-title">Script dokumentáció</h2>
+							</div>
+							<button
+								type="button"
+								className={styles.documentationCloseButton}
+								onClick={() => setIsDocumentationOpen(false)}
+								aria-label="Dokumentáció bezárása"
+								autoFocus
+							>
+								×
+							</button>
+						</header>
+						<div className={styles.documentationContent}>
+							<section>
+								<h3>Utasítások</h3>
+								<dl className={styles.documentationList}>
+									<div><dt><code>step forward 3</code></dt><dd>Előrelép 3 mezőt. Az érték 0–100 közötti egész vagy egész típusú változó lehet.</dd></div>
+									<div><dt><code>turn by 1</code></dt><dd>Elfordul 90°-kal balra. A 0–3 érték rendre 0°, 90°, 180°, 270° fordulat.</dd></div>
+									<div><dt><code>mine here</code></dt><dd>Begyűjti az aranyat a robot aktuális mezőjéről.</dd></div>
+									<div><dt><code>print valtozo</code></dt><dd>Kiír egy változót vagy literált a konzolra.</dd></div>
+								</dl>
+							</section>
+							<section>
+								<h3>Változók és feltételek</h3>
+								<p><code>set név to érték</code> létrehoz vagy frissít egy változót. A név angol betűvel kezdődjön; szám is szerepelhet benne.</p>
+								<pre className={styles.documentationCode}>{`set lepes to 0
+set vanArany to isThere 2
+set lepes to lepes + 1`}</pre>
+								<ul>
+									<li>Értékek: 0–100 közötti egész szám, <code>true</code> vagy <code>false</code>.</li>
+									<li>Aritmetika: <code>+</code>, <code>-</code>, <code>*</code>.</li>
+									<li>Összehasonlítás: <code>=</code>, <code>&lt;&gt;</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code>.</li>
+									<li>Logika: <code>and</code>, <code>or</code>, <code>not</code>.</li>
+								</ul>
+								<p><code>isThere 0</code> üres mezőt, <code>isThere 1</code> falat vagy pályán kívüli mezőt, <code>isThere 2</code> aranyat vizsgál a robot előtt.</p>
+							</section>
+							<section>
+								<h3>Elágazás és ciklus</h3>
+								<p>A blokkokat két szóközzel kell behúzni. Az <code>else</code> csak <code>if</code> után használható.</p>
+								<pre className={styles.documentationCode}>{`if isThere 2
+  step forward 1
+  mine here
+else
+  turn by 1
+while lepes < 10
+  step forward 1
+  set lepes to lepes + 1`}</pre>
+							</section>
+							<p className={styles.documentationNote}>A program legfeljebb 1000 utasítást hajthat végre. A szerkesztő futtatás előtt jelzi a szintaktikai és típushibákat.</p>
+						</div>
+						<footer className={styles.documentationFooter}>
+							<button
+								type="button"
+								className={styles.documentationDoneButton}
+								onClick={() => setIsDocumentationOpen(false)}
+							>
+								Vissza a scripthez
+							</button>
+						</footer>
+					</section>
+				</div>
+			)}
 			<div className={styles.workspace}>
 				<section className={styles.mapPanel} aria-label="Kiválasztott pálya">
 					<div className={styles.panelHeading}>
@@ -734,6 +816,9 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 					<div className={styles.panelHeading}>
 						<h2>Scriptek</h2>
 						<div className={styles.scriptActions}>
+							<button type="button" onClick={() => setIsDocumentationOpen(true)} className={styles.addButton}>
+								Dokumentáció
+							</button>
 							<input
 								ref={importFileRef}
 								type="file"
