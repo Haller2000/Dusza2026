@@ -137,6 +137,20 @@
   box-shadow: 0 0 0 1px rgb(188 231 199 / 50%), 0 14px 28px rgb(0 0 0 / 32%), 0 0 18px rgb(113 215 190 / 16%);
 }
 
+.mapPreviewArea {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #282e55;
+  background: radial-gradient(ellipse at center, rgb(145 205 162 / 10%), #10142a 74%);
+}
+
+.mapPreview {
+  width: min(100%, 234px);
+  justify-self: center;
+}
+
 .cardContent {
   display: grid;
   gap: 12px;
@@ -321,6 +335,10 @@
 
   .mapGrid {
     grid-template-columns: 1fr;
+  }
+
+  .mapPreviewArea {
+    min-height: 145px;
   }
 
   .selectionFooter {

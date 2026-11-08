@@ -54,7 +54,7 @@ const MyMapsPage: React.FC<MyMapsPageProps> = ({ onBack }) => {
             <span className={styles.sectionCount}>{maps.length} pálya</span>
           </div>
           <div className={styles.mapGrid}>
-            {maps.map(map => <MapCard key={map.id} map={map} />)}
+            {maps.map(map => <MapCard key={map.id} map={map} showPreview />)}
           </div>
         </>
       ) : !errorMessage && (
