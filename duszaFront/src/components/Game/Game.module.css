@@ -498,7 +498,8 @@
 .addButton:focus-visible,
 .removeButton:focus-visible,
 .backToScriptsButton:focus-visible,
-.saveNameButton:focus-visible {
+.saveNameButton:focus-visible,
+.endGameButton:focus-visible {
   outline: 2px solid var(--grass);
   outline-offset: 3px;
 }
@@ -759,7 +760,8 @@
 }
 
 .runButton,
-.controlButton {
+.controlButton,
+.endGameButton {
   min-height: 36px;
   padding: 0 12px;
   border: 2px solid #7d5030;
@@ -787,15 +789,30 @@
   box-shadow: inset 0 2px 0 rgb(227 239 194 / 52%), 0 4px 0 #38512e;
 }
 
-.controlButton:hover:not(:disabled) {
+.controlButton:hover:not(:disabled),
+.endGameButton:hover:not(:disabled) {
   transform: translateY(-1px);
   border-color: #593923;
   background: #f8e7c2;
   box-shadow: 0 3px 0 #80512d;
 }
 
+.endGameButton {
+  border-color: #9c513d;
+  color: #7a3025;
+  background: #f5d6bd;
+  box-shadow: 0 2px 0 #b66f55;
+}
+
+.endGameButton:hover:not(:disabled) {
+  border-color: #7a3025;
+  background: #ffe2cc;
+  box-shadow: 0 3px 0 #9c513d;
+}
+
 .runButton:disabled,
-.controlButton:disabled {
+.controlButton:disabled,
+.endGameButton:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }

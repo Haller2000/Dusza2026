@@ -239,6 +239,7 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const scriptHighlightRef = useRef<HTMLPreElement>(null);
 	const executionRef = useRef<Generator<RuntimeFrame> | null>(null);
 	const executionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const activeRunScriptRef = useRef<EditorScript | null>(null);
 	const latestRunFrameRef = useRef(runtimeFrame);
 	const runHistoryRef = useRef<Array<{ x: number; y: number; facing: RuntimeFrame['facing']; line: number; gold: number }>>([]);
 	const movementStepsRef = useRef(0);
@@ -450,6 +451,7 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 		setRuntimeFrame(initialFrame);
 		setIsRunning(true);
 		const scriptAtStart = activeScript;
+		activeRunScriptRef.current = scriptAtStart;
 		executionRef.current = executeMineScript(scriptAtStart.code, map);
 
 		const advance = () => {
@@ -460,6 +462,7 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 				if (result.done) {
 					cancelExecution();
 					setIsRunning(false);
+					activeRunScriptRef.current = null;
 					void saveCompletedScore(scriptAtStart);
 					return;
 				}
@@ -480,6 +483,7 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 			} catch (error: unknown) {
 				cancelExecution();
 				setIsRunning(false);
+				activeRunScriptRef.current = null;
 				setRuntimeError(error instanceof MineScriptRuntimeError
 					? error
 					: new MineScriptRuntimeError('E_RUNTIME', 0, 'Váratlan futásidejű hiba történt.'));
@@ -493,12 +497,23 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 		if (!isRunning) return;
 		cancelExecution();
 		setIsRunning(false);
+		activeRunScriptRef.current = null;
 		setScriptStatus('A futtatás leállítva.');
+	};
+
+	const endGame = () => {
+		const script = activeRunScriptRef.current;
+		if (!isRunning || !script || isSavingScore) return;
+		cancelExecution();
+		setIsRunning(false);
+		activeRunScriptRef.current = null;
+		void saveCompletedScore(script);
 	};
 
 	const resetExecution = () => {
 		cancelExecution();
 		setIsRunning(false);
+		activeRunScriptRef.current = null;
 		setRuntimeError(null);
 		setRuntimeFrame(createInitialRuntimeFrame(map));
 		setScriptStatus('');
@@ -748,6 +763,9 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 							</button>
 							<button type="button" onClick={stopExecution} className={styles.controlButton} disabled={!isRunning}>
 								Leállítás
+							</button>
+							<button type="button" onClick={endGame} className={styles.endGameButton} disabled={!isRunning || isSavingScore}>
+								Játék befejezése és mentése
 							</button>
 							<button type="button" onClick={resetExecution} className={styles.controlButton}>
 								Alaphelyzet
