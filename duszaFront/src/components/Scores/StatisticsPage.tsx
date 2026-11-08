@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios, { AxiosError } from 'axios';
 import MapCard from '../Map/MapCard';
+import MapTileIcon, { type MapTile } from '../Map/MapTileIcon';
 import type { SelectableMap } from '../Map/MapSelectionPage';
 import styles from './StatisticsPage.module.css';
 
@@ -19,7 +20,25 @@ interface RecentGame {
   points: number;
   gold_count: number;
   step_count: number;
+  steps: SavedStep[];
   created_at: string;
+}
+
+interface SavedStep {
+  x?: number;
+  y?: number;
+  robot?: [number, number];
+  facing?: string | number;
+  gold?: number;
+  line?: number;
+}
+
+interface PlaybackFrame {
+  x: number;
+  y: number;
+  facing: MapTile;
+  gold: number;
+  line: number;
 }
 
 interface StatisticsData {
@@ -56,6 +75,126 @@ const statisticCards: Array<{ label: string; value: keyof Omit<StatisticsData, '
   { label: 'Átlagpontszám', value: 'average_points' },
   { label: 'Legjobb pontszám', value: 'best_points' },
 ];
+
+const normalizeStep = (step: SavedStep): PlaybackFrame | null => {
+  const [robotX, robotY] = Array.isArray(step.robot) ? step.robot : [undefined, undefined];
+  const x = Number.isInteger(step.x) ? step.x : robotX;
+  const y = Number.isInteger(step.y) ? step.y : robotY;
+  if (typeof x !== 'number' || !Number.isInteger(x)
+    || typeof y !== 'number' || !Number.isInteger(y)) return null;
+
+  const facing = typeof step.facing === 'number'
+    ? (['^', '<', 'v', '>'] as const)[step.facing]
+    : step.facing;
+  const validFacing: MapTile[] = ['^', '<', 'v', '>'];
+
+  return {
+    x,
+    y,
+    facing: validFacing.includes(facing as MapTile) ? facing as MapTile : '>',
+    gold: Number.isFinite(step.gold) ? Number(step.gold) : 0,
+    line: Number.isFinite(step.line) ? Number(step.line) : 0,
+  };
+};
+
+const Timelapse: React.FC<{ game: RecentGame }> = ({ game }) => {
+  const frames = game.steps.map(normalizeStep).filter((frame): frame is PlaybackFrame => frame !== null);
+  const [frameIndex, setFrameIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const mapRows = game.map_snapshot.map_data.split(/\r?\n/);
+  const frame = frames[frameIndex];
+  const collectedGold = new Set<string>();
+  let previousGold = 0;
+  frames.slice(0, frameIndex + 1).forEach(step => {
+    if (step.gold > previousGold) collectedGold.add(`${step.x},${step.y}`);
+    previousGold = step.gold;
+  });
+
+  useEffect(() => {
+    if (!isPlaying || frames.length < 2) return;
+    const timer = window.setInterval(() => {
+      if (frameIndex >= frames.length - 1) {
+        setIsPlaying(false);
+        return;
+      }
+      setFrameIndex(frameIndex + 1);
+    }, 350);
+    return () => window.clearInterval(timer);
+  }, [frameIndex, frames.length, isPlaying]);
+
+  if (!frames.length) {
+    return <p className={styles.timelapseEmpty}>Ehhez a játékhoz nincs mentett mozgáselőzmény.</p>;
+  }
+
+  return (
+    <div className={styles.timelapse}>
+      <div
+        className={styles.timelapseGrid}
+        style={{ gridTemplateColumns: `repeat(${game.map_snapshot.width}, minmax(0, 1fr))` }}
+        role="img"
+        aria-label={`${game.map_name} robotmozgásának ${frameIndex + 1}. állapota`}
+      >
+        {Array.from({ length: game.map_snapshot.height }, (_, y) =>
+          Array.from({ length: game.map_snapshot.width }, (_, x) => {
+            const isRobot = frame.x === x && frame.y === y;
+            const originalCell = mapRows[y]?.[x] ?? '.';
+            const cell = isRobot
+              ? frame.facing
+              : originalCell === '^' || originalCell === '<' || originalCell === 'v' || originalCell === '>'
+                ? '.'
+                : originalCell === '@' && collectedGold.has(`${x},${y}`)
+                  ? '.'
+                  : originalCell as MapTile;
+            return (
+              <span key={`${x}-${y}`} className={`${styles.timelapseTile} ${isRobot ? styles.timelapseRobot : ''}`}>
+                <MapTileIcon cell={cell} className={styles.timelapseTileIcon} />
+              </span>
+            );
+          })
+        )}
+      </div>
+      <div className={styles.timelapseStats} aria-live="polite">
+        <span>Állapot: {frameIndex + 1} / {frames.length}</span>
+        <span>Robot: {frame.x + 1}, {frame.y + 1} · {frame.facing}</span>
+        <span>Arany: {frame.gold}</span>
+        {frame.line > 0 && <span>Script {frame.line}. sora</span>}
+      </div>
+      <div className={styles.timelapseControls}>
+        <button
+          type="button"
+          onClick={() => {
+            if (frameIndex >= frames.length - 1) setFrameIndex(0);
+            setIsPlaying(current => !current);
+          }}
+          className={styles.timelapseButton}
+        >
+          {isPlaying ? 'Szünet' : frameIndex >= frames.length - 1 ? 'Újra lejátszás' : 'Lejátszás'}
+        </button>
+        <input
+          type="range"
+          min={0}
+          max={frames.length - 1}
+          value={frameIndex}
+          onChange={event => {
+            setIsPlaying(false);
+            setFrameIndex(Number(event.target.value));
+          }}
+          aria-label="Timelapse állapota"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setIsPlaying(false);
+            setFrameIndex(0);
+          }}
+          className={styles.timelapseButton}
+        >
+          Elejére
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const StatisticsPage: React.FC<StatisticsPageProps> = ({ onBack }) => {
   const [statistics, setStatistics] = useState<StatisticsData>(EMPTY_STATISTICS);
@@ -148,6 +287,10 @@ const StatisticsPage: React.FC<StatisticsPageProps> = ({ onBack }) => {
                           <span>Teljesített eredmény: {game.gold_count} arany, {game.step_count} lépés</span>
                         </div>
                       </div>
+                    </details>
+                    <details className={styles.mapDetails}>
+                      <summary>Robotmozgás timelapse</summary>
+                      <Timelapse game={game} />
                     </details>
                   </article>
                 ))}
