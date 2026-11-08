@@ -285,22 +285,55 @@
   width: min(100%, 560px);
 }
 
-.scriptEditor {
+.scriptEditorFrame {
+  position: relative;
   flex: 1;
-  width: 100%;
   min-height: 400px;
+  overflow: hidden;
+  border-top: 1px solid #293241;
+  background: #0c1016;
+}
+
+.scriptHighlight,
+.scriptEditor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   box-sizing: border-box;
-  resize: vertical;
+  margin: 0;
   padding: 16px;
   border: 0;
-  border-top: 1px solid #293241;
-  outline: none;
-  color: #dce5ef;
-  background: #0c1016;
   font-family: var(--mono);
   font-size: 14px;
   line-height: 1.65;
   tab-size: 2;
+  white-space: pre;
+}
+
+.scriptHighlight {
+  overflow: hidden;
+  color: #dce5ef;
+  pointer-events: none;
+}
+
+.scriptHighlight > span {
+  display: block;
+  min-height: 1.65em;
+}
+
+.scriptEditor {
+  z-index: 1;
+  overflow: auto;
+  outline: none;
+  color: transparent;
+  caret-color: #dce5ef;
+  background: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.scriptEditor::selection {
+  background: rgb(83 201 245 / 28%);
 }
 
 .scriptEditor:focus-visible {
@@ -309,6 +342,40 @@
 
 .scriptEditor::placeholder {
   color: #768397;
+  -webkit-text-fill-color: #768397;
+}
+
+.invalidCode {
+  border-radius: 2px;
+  background: rgb(211 74 74 / 14%);
+  text-decoration: underline wavy #ef6969;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+.invalidCodeLine {
+  background: rgb(211 74 74 / 5%);
+}
+
+.scriptDiagnostics,
+.scriptValid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 14px;
+  border-top: 1px solid #293241;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.scriptDiagnostics {
+  color: #ffc0c0;
+  background: rgb(87 34 39 / 38%);
+}
+
+.scriptValid {
+  color: #bce7c7;
+  background: rgb(25 51 41 / 52%);
 }
 
 @media (max-width: 800px) {
@@ -338,7 +405,7 @@
     padding: 12px;
   }
 
-  .scriptEditor {
+  .scriptEditorFrame {
     min-height: 300px;
   }
 }

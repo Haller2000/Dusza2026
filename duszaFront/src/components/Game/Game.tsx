@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import type { SelectableMap } from '../Map/MapSelectionPage';
 import MapGridPreview from '../Map/MapGridPreview';
+import { validateMineScript, type MineScriptDiagnostic } from './mineScriptValidator';
 import styles from './Game.module.css';
 
 interface GameProps {
@@ -8,12 +9,59 @@ interface GameProps {
 	onBack: () => void;
 }
 
+const renderScriptHighlight = (code: string, diagnostics: MineScriptDiagnostic[]) => {
+	let lineStart = 0;
+	return code.split('\n').map((line, lineIndex) => {
+		const lineEnd = lineStart + line.length;
+		const lineDiagnostics = diagnostics.filter(diagnostic => diagnostic.line === lineIndex + 1);
+		const ranges = lineDiagnostics
+			.filter(diagnostic => diagnostic.start < lineEnd && diagnostic.end > lineStart)
+			.map(diagnostic => ({
+				start: Math.max(0, diagnostic.start - lineStart),
+				end: Math.min(line.length, diagnostic.end - lineStart),
+			}));
+		lineStart = lineEnd + 1;
+
+		if (!line.length) {
+			return (
+				<span key={lineIndex} className={lineDiagnostics.length ? styles.invalidCodeLine : undefined}>
+					{lineDiagnostics.length ? <span className={styles.invalidCode}>{'\u00a0'}</span> : '\u00a0'}
+				</span>
+			);
+		}
+
+		const mergedRanges = ranges.sort((left, right) => left.start - right.start).reduce<Array<{ start: number; end: number }>>((merged, range) => {
+			const previous = merged[merged.length - 1];
+			if (previous && range.start <= previous.end) previous.end = Math.max(previous.end, range.end);
+			else merged.push({ ...range });
+			return merged;
+		}, []);
+		const segments: React.ReactNode[] = [];
+		let cursor = 0;
+		mergedRanges.forEach((range, rangeIndex) => {
+			if (range.start > cursor) segments.push(line.slice(cursor, range.start));
+			segments.push(<span key={rangeIndex} className={styles.invalidCode}>{line.slice(range.start, range.end)}</span>);
+			cursor = range.end;
+		});
+		if (cursor < line.length) segments.push(line.slice(cursor));
+
+		return (
+			<span key={lineIndex} className={lineDiagnostics.length ? styles.invalidCodeLine : undefined}>
+				{segments}
+			</span>
+		);
+	});
+};
+
 const Game: React.FC<GameProps> = ({ map, onBack }) => {
 	const [scripts, setScripts] = useState([{ id: 1, name: 'Script 1', code: '' }]);
 	const [activeScriptId, setActiveScriptId] = useState<number | null>(null);
 	const [isRenamingScript, setIsRenamingScript] = useState(false);
 	const [scriptNameDraft, setScriptNameDraft] = useState('');
+	const scriptEditorRef = useRef<HTMLTextAreaElement>(null);
+	const scriptHighlightRef = useRef<HTMLPreElement>(null);
 	const activeScript = scripts.find(script => script.id === activeScriptId);
+	const diagnostics = activeScript ? validateMineScript(activeScript.code) : [];
 
 	const addScript = () => {
 		const id = Math.max(...scripts.map(script => script.id)) + 1;
@@ -121,15 +169,38 @@ const Game: React.FC<GameProps> = ({ map, onBack }) => {
 									)}
 								</div>
 							</div>
-							<textarea
-								id="script-editor"
-								className={styles.scriptEditor}
-								value={activeScript.code}
-								onChange={event => updateActiveScript(event.target.value)}
-								spellCheck={false}
-								aria-label={`${activeScript.name} kódja`}
-								placeholder={'Írd ide a robot utasításait...\nPéldául: step 1'}
-							/>
+							<div className={styles.scriptEditorFrame}>
+								<pre ref={scriptHighlightRef} className={styles.scriptHighlight} aria-hidden="true">
+									{renderScriptHighlight(activeScript.code, diagnostics)}
+								</pre>
+								<textarea
+									ref={scriptEditorRef}
+									id="script-editor"
+									className={styles.scriptEditor}
+									value={activeScript.code}
+									onChange={event => updateActiveScript(event.target.value)}
+									onScroll={event => {
+										if (scriptHighlightRef.current) {
+											scriptHighlightRef.current.scrollTop = event.currentTarget.scrollTop;
+											scriptHighlightRef.current.scrollLeft = event.currentTarget.scrollLeft;
+										}
+									}}
+									spellCheck={false}
+									aria-label={`${activeScript.name} kódja`}
+									aria-invalid={diagnostics.length > 0}
+									aria-describedby="script-validation"
+									placeholder={'Írd ide a robot utasításait...\nPéldául: step 1'}
+									wrap="off"
+								/>
+							</div>
+							<div id="script-validation" className={diagnostics.length ? styles.scriptDiagnostics : styles.scriptValid} role="status" aria-live="polite">
+								{diagnostics.length ? (
+									<>
+										<strong>{diagnostics.length} hiba</strong>
+										<span>{diagnostics[0].line}. sor: {diagnostics[0].message}</span>
+									</>
+								) : 'A script megfelel az ellenőrzött szabályoknak.'}
+							</div>
 						</div>
 					) : (
 						<div className={styles.scriptList} aria-label="Script kiválasztása">
