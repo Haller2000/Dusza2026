@@ -325,6 +325,7 @@
 .databaseLoader button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgb(0 0 0 / 28%);
+  color: #3c291a;
 }
 
 .hiddenInput {
@@ -460,6 +461,7 @@
   border-color: #593923;
   background: #f8e7c2;
   box-shadow: 0 3px 0 #80512d;
+  color:#3c291a;
 }
 
 .selectedTool {
