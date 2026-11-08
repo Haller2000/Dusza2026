@@ -50,13 +50,16 @@
   cursor: pointer;
   font: inherit;
   font-size: 13px;
+  transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
 }
 
 .accountButton:hover,
 .accountButton:focus-visible {
+  transform: translateY(-1px);
   border-color: #593923;
   color: #3e2918;
   background: #f8e7c2;
+  box-shadow: 0 4px 0 #80512d;
   outline: none;
 }
 
@@ -103,14 +106,19 @@
   background: transparent;
   cursor: pointer;
   text-align: left;
+  transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
 }
 
 .menuLink + .menuLink {
   border-top: 1px solid #d5bd92;
 }
 
-.menuLink:hover {
-  background: #fff9e9;
+.menuLink:hover,
+.menuLink:focus-visible {
+  color: #38512e;
+  background: #e4edcc;
+  box-shadow: inset 3px 0 #557a45;
+  outline: none;
 }
 
 .menuIcon {
@@ -158,10 +166,19 @@
   background: linear-gradient(180deg, #a86e3d, #80502e);
   box-shadow: 0 3px 0 #593923;
   cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
 }
 
 .logoutButton:hover {
-  background: linear-gradient(180deg, #bb8050, #91603b);
+  transform: translateY(-1px);
+  border-color: #9c513d;
+  background: linear-gradient(180deg, #c7794d, #9c513d);
+  box-shadow: 0 4px 0 #7a3025;
+}
+
+.logoutButton:focus-visible {
+  outline: 2px solid #557a45;
+  outline-offset: 3px;
 }
 
 @media (max-width: 480px) {
